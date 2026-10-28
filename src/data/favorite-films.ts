@@ -17,13 +17,13 @@ export const favoriteFilmsFallback: FavoriteFilm[] = [
     posterUrl: "https://a.ltrbxd.com/resized/film-poster/4/5/6/6/7/45667-the-notebook-0-300-0-450-crop.jpg?v=d867e84f30",
   },
   {
-    title: "Stalker",
-    letterboxdUrl: "https://letterboxd.com/film/stalker/",
-    posterUrl: "https://a.ltrbxd.com/resized/film-poster/5/1/0/6/2/51062-stalker-0-300-0-450-crop.jpg?v=1852068db9",
-  },
-  {
     title: "Ford v Ferrari",
     letterboxdUrl: "https://letterboxd.com/film/ford-v-ferrari/",
     posterUrl: "https://a.ltrbxd.com/resized/film-poster/2/9/1/4/1/9/291419-ford-v-ferrari-0-300-0-450-crop.jpg?v=27ed4e72db",
+  },
+  {
+    title: "Being there",
+    letterboxdUrl: "https://letterboxd.com/film/being-there/",
+    posterUrl: "https://a.ltrbxd.com/resized/sm/upload/ut/38/ta/f1/being-there-0-460-0-690-crop.jpg?v=9799a46603",
   },
 ];
