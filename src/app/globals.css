@@ -294,104 +294,6 @@ html {
   gap: 2.25rem;
 }
 
-.favorite-films-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.favorite-film {
-  min-width: 0;
-}
-
-.favorite-film-cover {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  aspect-ratio: 2 / 3;
-  background: var(--color-panel);
-  color: var(--amber-strong);
-  text-decoration: none;
-}
-
-.favorite-film-poster,
-.favorite-film-poster-empty {
-  display: block;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
-}
-
-.favorite-film-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0.7rem;
-  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
-  color: var(--text-primary);
-  text-align: center;
-  opacity: 0;
-  transition: opacity 140ms ease;
-}
-
-.favorite-film-cover:hover .favorite-film-overlay,
-.favorite-film-cover:focus-visible .favorite-film-overlay {
-  opacity: 1;
-}
-
-.favorite-film-cover:hover {
-  text-shadow: none;
-}
-
-.favorite-film-title {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--amber-strong);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  font-weight: 600;
-  text-wrap: balance;
-}
-
-.favorite-film-year {
-  color: var(--cli-fg);
-}
-
-.favorite-film-cover:focus-visible {
-  outline: 2px solid var(--amber-strong);
-  outline-offset: 2px;
-}
-
-@media (max-width: 720px) {
-  .favorite-films-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (hover: none) {
-  .favorite-film-overlay {
-    inset: auto 0 0;
-    padding: 0.5rem;
-    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
-    opacity: 1;
-  }
-
-  .favorite-film-title {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-}
-
 .lastfm-list {
   display: grid;
   gap: 0.35rem;
@@ -532,8 +434,7 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lastfm-album-overlay,
-  .favorite-film-overlay {
+  .lastfm-album-overlay {
     transition: none;
   }
 }

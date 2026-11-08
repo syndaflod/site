@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import type { ReactNode } from "react";
 import { LastFmSection } from "./lastfm-section";
 
 // se foda carai kkkkkkkk
@@ -51,14 +50,14 @@ const copy = {
     jobRole: "analista de suporte",
     jobDate: "ago 2025 · presente",
     jobDescription:
-      "atendimento a usuários do ambiente senac, diagnóstico de problemas de acesso e sistemas corporativos, e acompanhamento de chamados até a resolução ou escalonamento. também desenvolve automações internas para reduzir tarefas repetitivas.",
+      "Atuação no suporte técnico aos usuários do ambiente SENAC, com triagem e diagnóstico de problemas relacionados a acessos e sistemas corporativos, acompanhamento de chamados e encaminhamento de ocorrências. Participação no desenvolvimento de soluções internas para otimizar processos e simplificar rotinas operacionais.",
     location: "SP, São Paulo - Brasil",
     projects: "projetos",
     projectDetails: [
       {
         title: "roboSENAC",
         subtitle: "Extensão interna de suporte",
-        technologies: "JS, Chrome MV3",
+        technologies: "JS",
         date: "2026",
         description:
           "Reúne em um clique os dados que o analista precisa para atender um chamado: ticket e solicitante no IBM Maximo, ID do aluno e chamados similares, vindos de sistemas diferentes. Elimina a troca de telas e a cópia manual de campos.",
@@ -84,7 +83,7 @@ const copy = {
         technologies: "TS, Next.js",
         date: "2026",
         description:
-          "Site pessoal feito em Next.js com projetos, experiência e stack, visual de terminal e integrações com Last.fm e Letterboxd.",
+          "Desenvolvido com Next.js e TypeScript, reúne projetos, experiências e tecnologias, além de integrar dados musicais do Last.fm.",
         href: "https://github.com/syndaflod/site",
       },
     ],
@@ -94,7 +93,7 @@ const copy = {
       { label: "linguagens", items: "java · javascript · typescript · python" },
       { label: "back-end", items: "spring boot · node.js" },
       { label: "front-end", items: "sveltekit · next.js" },
-      { label: "dados", items: "mysql" },
+      { label: "dados", items: "mysql · sql" },
       { label: "integração", items: "rest apis · oslc" },
     ],
     email: "e-mail",
@@ -145,7 +144,7 @@ const copy = {
         technologies: "TS, Next.js",
         date: "2026",
         description:
-          "Personal site built with Next.js featuring projects, experience, and stack details, a terminal-inspired visual, and Last.fm and Letterboxd integrations.",
+          "Personal site built with Next.js featuring projects, experience, and stack details, a terminal-inspired visual, and a Last.fm integration.",
         href: "https://github.com/syndaflod/site",
       },
     ],
@@ -176,7 +175,7 @@ function SectionHeading({ children }: { children: string }) {
   );
 }
 
-export default function Home({ favoriteFilms }: { favoriteFilms: ReactNode }) {
+export default function Home() {
   const language: keyof typeof copy = "pt-br";
   const text = copy[language];
 
@@ -260,8 +259,6 @@ export default function Home({ favoriteFilms }: { favoriteFilms: ReactNode }) {
             ))}
           </ul>
         </section>
-
-        {favoriteFilms}
 
         <LastFmSection language={language} />
 
