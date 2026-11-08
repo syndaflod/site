@@ -196,7 +196,7 @@ export default function Home() {
           <p>{text.location}</p>
           <p className="about-summary">{text.aboutSummary}</p>
           <p className="about-contact-links">
-            <a href="mailto:heitortureckz@gmail.com">{text.email}</a>
+            <a href="mailto:heitor@tureck.site">{text.email}</a>
             <span aria-hidden="true"> · </span>
             <a href="https://github.com/syndaflod" target="_blank" rel="noreferrer">{text.github}</a>
             <span aria-hidden="true"> · </span>
