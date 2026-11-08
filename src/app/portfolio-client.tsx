@@ -47,7 +47,7 @@ const copy = {
   "pt-br": {
     about: "sobre mim",
     aboutSummary:
-      "estudante de ciência da computação e analista de suporte técnico, com foco em software prático, automação de processos e integração de sistemas.",
+      "Estudante de Ciência da Computação e desenvolvedor de software, interessado em criar soluções práticas e automatizar processos.",
     work: "experiência",
     jobRole: "analista de suporte",
     jobDate: "ago 2025 · presente",
