@@ -1,6 +1,7 @@
 # heitor tureck
 
 built with Next.js, React, and TypeScript.
+- bg from [ascii-sharks](https://github.com/stackedlol/ascii-sharks)
 
 ## development
 
