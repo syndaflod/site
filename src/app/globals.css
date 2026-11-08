@@ -157,13 +157,19 @@ html {
   margin-left: auto;
 }
 
-.cli-banner {
-  position: relative;
-  z-index: 1;
-  overflow-wrap: normal;
-  white-space: pre;
-  letter-spacing: -0.04em;
-  line-height: 1;
+.title-banner {
+  width: 100%;
+  margin-bottom: 2.25rem;
+}
+
+.title-banner svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.title-banner-404 {
+  max-width: 20rem;
 }
 
 .cli-block {

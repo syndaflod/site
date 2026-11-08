@@ -1,17 +1,6 @@
 import Link from "next/link";
-
-const art = [
-  " ███▄    █  ▒█████  ▄▄▄█████▓     █████▒▒█████   █    ██  ███▄    █ ▓█████▄ ",
-  " ██ ▀█   █ ▒██▒  ██▒▓  ██▒ ▓▒   ▓██   ▒▒██▒  ██▒ ██  ▓██▒ ██ ▀█   █ ▒██▀ ██▌",
-  "▓██  ▀█ ██▒▒██░  ██▒▒ ▓██░ ▒░   ▒████ ░▒██░  ██▒▓██  ▒██░▓██  ▀█ ██▒░██   █▌",
-  "▓██▒  ▐▌██▒▒██   ██░░ ▓██▓ ░    ░▓█▒  ░▒██   ██░▓▓█  ░██░▓██▒  ▐▌██▒░▓█▄   ▌",
-  "▒██░   ▓██░░ ████▓▒░  ▒██▒ ░    ░▒█░   ░ ████▓▒░▒▒█████▓ ▒██░   ▓██░░▒████▓ ",
-  "░ ▒░   ▒ ▒ ░ ▒░▒░▒░   ▒ ░░       ▒ ░   ░ ▒░▒░▒░ ░▒▓▒ ▒ ▒ ░ ▒░   ▒ ▒  ▒▒▓  ▒ ",
-  "░ ░░   ░ ▒░  ░ ▒ ▒░     ░        ░       ░ ▒ ▒░ ░░▒░ ░ ░ ░ ░░   ░ ▒░ ░ ▒  ▒ ",
-  "   ░   ░ ░ ░ ░ ░ ▒    ░          ░ ░   ░ ░ ░ ▒   ░░░ ░ ░    ░   ░ ░  ░ ░  ░ ",
-  "         ░     ░ ░                         ░ ░     ░              ░    ░    ",
-  "                                                                     ░      ",
-].join("\n");
+import { TitleBanner } from "./title-banner";
+import { notFoundBanner } from "./title-banners";
 
 export default function NotFound() {
   return (
@@ -27,16 +16,7 @@ export default function NotFound() {
           textAlign: "center",
         }}
       >
-        <pre
-          className="cli-banner cli-acc"
-          role="img"
-          aria-label="not found"
-          // 76 columns at a 0.56em advance (0.6em glyph, -0.04em spacing) must fit
-          // inside the 1rem side gutters.
-          style={{ margin: "0 0 2rem", fontSize: "clamp(4px, calc((100vw - 2rem) / 44), 14px)", textAlign: "left" }}
-        >
-          {art}
-        </pre>
+        <TitleBanner art={notFoundBanner} className="title-banner-404" label="404" />
         <h1 className="cli-acc cli-b" style={{ margin: 0, fontSize: "inherit" }}>
           página não encontrada
         </h1>

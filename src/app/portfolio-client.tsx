@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { LastFmSection } from "./lastfm-section";
+import { TitleBanner } from "./title-banner";
+import { titleBanner } from "./title-banners";
 
 // se foda carai kkkkkkkk
 const trollface = String.raw`
@@ -186,18 +188,7 @@ export default function Home() {
   return (
     <main className="cli-root" id="top">
       <div className="cli-col">
-        <header className="cli-banner" aria-label="Heitor Tureck de Oliveira">
-          <div className="cli-acc"> ██░ ██ ▓█████  ██▓▄▄▄█████▓ ▒█████   ██▀███     ▄▄▄█████▓ █    ██  ██▀███  ▓█████  ▄████▄   ██ ▄█▀</div>
-          <div className="cli-acc">▓██░ ██▒▓█   ▀ ▓██▒▓  ██▒ ▓▒▒██▒  ██▒▓██ ▒ ██▒   ▓  ██▒ ▓▒ ██  ▓██▒▓██ ▒ ██▒▓█   ▀ ▒██▀ ▀█   ██▄█▒ </div>
-          <div className="cli-acc">▒██▀▀██░▒███   ▒██▒▒ ▓██░ ▒░▒██░  ██▒▓██ ░▄█ ▒   ▒ ▓██░ ▒░▓██  ▒██░▓██ ░▄█ ▒▒███   ▒▓█    ▄ ▓███▄░ </div>
-          <div className="cli-acc">░▓█ ░██ ▒▓█  ▄ ░██░░ ▓██▓ ░ ▒██   ██░▒██▀▀█▄     ░ ▓██▓ ░ ▓▓█  ░██░▒██▀▀█▄  ▒▓█  ▄ ▒▓▓▄ ▄██▒▓██ █▄ </div>
-          <div className="cli-acc">░▓█▒░██▓░▒████▒░██░  ▒██▒ ░ ░ ████▓▒░░██▓ ▒██▒     ▒██▒ ░ ▒▒█████▓ ░██▓ ▒██▒░▒████▒▒ ▓███▀ ░▒██▒ █▄</div>
-          <div className="cli-acc"> ▒ ░░▒░▒░ ▒░ ░░▓    ▒ ░░   ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░     ▒ ░░   ░▒▓▒ ▒ ▒ ░ ▒▓ ░▒▓░░░ ▒░ ░░ ░▒ ▒  ░▒ ▒▒ ▓▒</div>
-          <div className="cli-acc"> ▒ ░▒░ ░ ░ ░  ░ ▒ ░    ░      ░ ▒ ▒░   ░▒ ░ ▒░       ░    ░░▒░ ░ ░   ░▒ ░ ▒░ ░ ░  ░  ░  ▒   ░ ░▒ ▒░</div>
-          <div className="cli-acc"> ░  ░░ ░   ░    ▒ ░  ░      ░ ░ ░ ▒    ░░   ░      ░       ░░░ ░ ░   ░░   ░    ░   ░        ░ ░░ ░ </div>
-          <div className="cli-acc"> ░  ░  ░   ░  ░ ░               ░ ░     ░                    ░        ░        ░  ░░ ░      ░  ░   </div>
-          <div className="cli-acc">                                                                                    ░               </div>
-        </header>
+        <TitleBanner art={titleBanner} label="Heitor Tureck de Oliveira" />
 
         <section className="cli-block" aria-label={text.about}>
           <SectionHeading>{text.about}</SectionHeading>
