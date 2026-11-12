@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { AsciiOcean } from "../lib/ascii-sharks/react";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body>
         <AsciiOcean className="site-ascii-ocean" />
         {children}
+        <Analytics />
       </body>
     </html>
   );
