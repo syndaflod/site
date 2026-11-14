@@ -103,6 +103,12 @@ body {
   pointer-events: none;
 }
 
+/* /background: no content, so no readability mask over the middle column. */
+body:has(.background-only) .site-ascii-ocean {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 p,
 h2,
 h3,
@@ -111,15 +117,25 @@ dd {
   margin: 0;
 }
 
+/* Links show their underline only on hover, with no glow. */
 a {
   color: var(--cli-alt);
-  text-decoration: underline;
+  text-decoration: none;
   text-underline-offset: 2px;
 }
 
 a:hover {
   color: #fff0c0;
-  text-shadow: var(--glow-text);
+  text-decoration: underline;
+}
+
+/* Whole-tile links (file cards, album covers, gallery photos) keep their text as it is on
+   hover; the tile's own border or overlay shows the hover instead. */
+a.file-card:hover,
+a.lastfm-album-tile:hover,
+.gallery-grid a:hover {
+  color: inherit;
+  text-decoration: none;
 }
 
 a:focus-visible {
@@ -276,10 +292,6 @@ html {
   .project-heading > span {
     text-align: left;
   }
-}
-
-.project a:hover {
-  text-shadow: none;
 }
 
 .project-bullets {
@@ -522,4 +534,1061 @@ html {
     padding: 2.5rem 1rem 3rem;
   }
 
+}
+
+/* ---------- private pages: /login, /drop, /view ---------- */
+
+.private-center {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- workspace menu: /drop, /view, /gallery ---------- */
+
+/* Three columns of which the outer two are always equal (minmax(0, 1fr) ignores what's in
+   them), so the menu sits on the page's center line on every page, panel or not. The panel
+   spans every row; the last row is flexible so a tall panel never pushes the filter down. */
+.workspace-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  /* Plain 1fr sides (minimum: their content) instead of minmax(0, 1fr): the right side can't
+     shrink below the storage panel, so the panel never slides over the filters. The menu stays
+     centered whenever both sides fit; when they don't, the empty left side gives way first. */
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    ". menu   panel"
+    ". filter panel"
+    ". .      panel";
+  column-gap: 1rem;
+  /* Same width as the page column below (48rem + its side padding), so the panel lines up
+     with the right edge of the file grid instead of the edge of the window. */
+  max-width: 51rem;
+  margin-inline: auto;
+  padding: 2.5rem 1.5rem 0;
+  font-size: 14px;
+  line-height: 1.9;
+  text-shadow: var(--content-text-shadow);
+}
+
+.workspace-nav {
+  grid-area: menu;
+}
+
+.workspace-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workspace-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--cli-dim);
+  text-decoration: none;
+  transition: color 150ms ease;
+  touch-action: manipulation;
+}
+
+.workspace-nav a:hover {
+  color: var(--text-secondary);
+}
+
+.workspace-nav a[aria-current="page"] {
+  color: var(--cli-acc);
+  font-weight: 600;
+}
+
+.workspace-nav-caret {
+  color: var(--cli-acc);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 150ms ease, transform 200ms ease;
+}
+
+.workspace-nav a[aria-current="page"] .workspace-nav-caret {
+  opacity: 1;
+  transform: none;
+}
+
+/* File-type filters under the menu on /view: plain selectable words, the active one in accent. */
+.view-filter {
+  grid-area: filter;
+  margin-top: 0.35rem;
+  animation: view-filter-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.view-filter ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.view-filter a {
+  color: var(--cli-dim);
+  font-size: 0.92em;
+  text-decoration: none;
+  transition: color 150ms ease;
+  touch-action: manipulation;
+}
+
+.view-filter a:hover {
+  color: var(--text-secondary);
+}
+
+.view-filter a[aria-current="true"] {
+  color: var(--cli-acc);
+}
+
+@keyframes view-filter-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Top-right, lined up with the top of the menu. */
+.storage-panel {
+  grid-area: panel;
+  align-self: start;
+  justify-self: end;
+  margin-top: -0.75rem;
+  animation: view-filter-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Every character gets its own 1ch cell, so borders line up whatever font draws the glyph. */
+.storage-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1ch);
+  grid-auto-rows: 1.25em;
+  color: var(--cli-dim);
+  font-size: 11px;
+  line-height: 1.25em;
+  text-shadow: none;
+  user-select: none;
+}
+
+.storage-cell {
+  display: block;
+  overflow: hidden;
+  text-align: center;
+  white-space: pre;
+}
+
+/* Bar cells: a solid block, inset a little top and bottom so rows read as separate bars. */
+.storage-cell.is-fill,
+.storage-cell.is-empty {
+  margin-block: 0.25em;
+}
+
+.storage-cell.is-fill {
+  background: var(--cli-acc);
+}
+
+.storage-cell.is-empty {
+  background: color-mix(in srgb, var(--cli-line) 45%, transparent);
+}
+
+@media (max-width: 860px) {
+  .workspace-header {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      "menu"
+      "filter"
+      "panel";
+  }
+
+  .storage-panel {
+    justify-self: center;
+    margin-top: 1.25rem;
+  }
+}
+
+/* Workspace pages scroll without a visible scrollbar. All of them, not just /view: a bar
+   that comes and goes changes the page width and nudges the centered menu sideways. */
+html:has(.workspace) {
+  scrollbar-width: none;
+}
+
+html:has(.workspace)::-webkit-scrollbar {
+  display: none;
+}
+
+/* Menu + page share one viewport height, so short pages never scroll;
+   pages only scroll when their own content is taller than the screen. */
+.workspace {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  /* The page slides up 6px on entry; without clipping, that overhang adds a scrollbar for a moment. */
+  overflow-y: clip;
+}
+
+.workspace-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  animation: workspace-page-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.workspace-page > .cli-root {
+  min-height: 0;
+  flex: 1;
+}
+
+@keyframes workspace-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* The menu takes the top spacing, so the column below starts closer to it. */
+.workspace-header + .workspace-page .cli-col {
+  padding-top: 2.5rem;
+}
+
+@media (max-width: 720px) {
+  .workspace-header {
+    padding: 2rem 1rem 0;
+    font-size: 12px;
+  }
+
+  .workspace-header + .workspace-page .cli-col {
+    padding-top: 1.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-nav-caret {
+    transition: none;
+  }
+
+  .workspace-page,
+  .view-filter,
+  .storage-panel {
+    animation: none;
+  }
+}
+
+.cli-button {
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--cli-line);
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  color: var(--cli-acc);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cli-button:hover:not(:disabled) {
+  border-color: var(--amber-line);
+  color: #fff0c0;
+  text-shadow: var(--glow-text);
+}
+
+.cli-button:focus-visible {
+  outline: 2px solid var(--amber-strong);
+  outline-offset: 3px;
+}
+
+.cli-button:disabled {
+  color: var(--cli-dim);
+  cursor: progress;
+}
+
+.cli-button.is-danger:hover {
+  border-color: var(--status-danger);
+  color: var(--status-danger);
+}
+
+.dropzone {
+  display: flex;
+  width: 100%;
+  min-height: 14rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 2rem 1rem;
+  border: 1px dashed var(--amber-line);
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.dropzone:hover,
+.dropzone.is-dragging {
+  border-style: solid;
+  border-color: var(--amber-strong);
+  background: color-mix(in srgb, var(--color-panel-active) 75%, transparent);
+}
+
+.dropzone:focus-visible {
+  outline: 2px solid var(--amber-strong);
+  outline-offset: 3px;
+}
+
+.drop-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.drop-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.drop-option input {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  accent-color: var(--amber-primary);
+  cursor: pointer;
+}
+
+.drop-option input:focus-visible {
+  outline: 2px solid var(--amber-strong);
+  outline-offset: 3px;
+}
+
+.drop-option .cli-dim {
+  font-size: 0.85em;
+}
+
+.drop-list {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drop-item {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--cli-line);
+}
+
+.drop-item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.drop-item-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drop-item-size {
+  font-size: 0.85em;
+}
+
+.drop-progress {
+  height: 2px;
+  margin: 0.3rem 0;
+  background: var(--amber-dim);
+}
+
+.drop-progress span {
+  display: block;
+  height: 100%;
+  background: var(--amber-primary);
+  transform-origin: left;
+  transition: transform 120ms linear;
+}
+
+.drop-item.is-done .drop-progress span {
+  background: var(--status-ok);
+}
+
+.drop-item.is-error .drop-progress span {
+  background: var(--status-danger);
+}
+
+.drop-item.is-error .drop-item-row > .cli-dim {
+  color: var(--status-danger);
+}
+
+/* margin-block only (here and on .gallery-grid): the column centers its children with
+   margin-inline: auto, and a "margin: 0" shorthand would pin the grid to the left edge. */
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 1rem;
+  margin-block: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Thumb, then name and meta as one tight group: 0.6rem under the thumb, 0.1rem between the
+   two text lines, and the grid's 1rem+ between cards, so each caption reads as its own tile's. */
+.file-card {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+
+.file-thumb {
+  position: relative;
+  display: grid;
+  aspect-ratio: 1;
+  overflow: hidden;
+  place-items: center;
+  margin-block-end: 0.6rem;
+  border: 1px solid var(--cli-line);
+  background: color-mix(in srgb, var(--color-panel) 80%, transparent);
+  transition: border-color 150ms ease;
+}
+
+.file-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-card:hover .file-thumb {
+  border-color: var(--amber-strong);
+}
+
+/* Tiles without a picture: the extension is what tells files apart, the kind is a quiet hint. */
+.file-thumb-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  line-height: 1.2;
+}
+
+.file-thumb-ext {
+  color: var(--cli-acc);
+  font-size: 1.15em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.file-thumb-kind {
+  color: var(--cli-dim);
+  font-size: 0.8em;
+}
+
+/* A long name is cut at the end of its stem, never its extension; the full name is the link's title. */
+.file-card-name {
+  display: flex;
+  min-width: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.file-card-stem {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.file-card-ext {
+  flex: none;
+  color: var(--cli-dim);
+}
+
+/* Size and date, with a small amber mark at the end of the line for files in the gallery. */
+.file-card-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-block-start: 0.1rem;
+  color: var(--cli-dim);
+  font-size: 0.8em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.file-card-gallery {
+  margin-inline-start: auto;
+  color: var(--cli-acc);
+}
+
+/* margin-block only: the column centers its children with margin-inline: auto. */
+.file-title {
+  margin-block: 0;
+  font-size: inherit;
+  text-align: center;
+}
+
+.file-meta {
+  text-align: center;
+}
+
+.file-preview {
+  margin-block: 1.5rem;
+}
+
+/* Image view: title, image and buttons share one screen, so the page never scrolls.
+   The preview takes whatever height the rest leaves, and the frame fits inside it. */
+.cli-root.is-fit {
+  display: flex;
+  flex-direction: column;
+}
+
+.is-fit > .cli-col {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding-bottom: 2.5rem;
+}
+
+.is-fit .file-preview {
+  position: relative;
+  width: 100%;
+  /* Below this the page scrolls instead of shrinking the image to nothing. */
+  min-height: 12rem;
+  flex: 1 1 0;
+}
+
+/* Pinned to the preview area: the page's height chain starts from a min-height, so the area's
+   height doesn't count as definite for percentages (and container query height units read 0).
+   An absolutely positioned box gets the laid-out size, so the max sizes below resolve.
+   The image and the skeleton sit in the same cell, centered. */
+.preview-frame {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+}
+
+.preview-frame > * {
+  grid-area: 1 / 1;
+}
+
+/* Never larger than the space or than the image itself; auto sizes keep the aspect ratio. */
+.preview-frame img,
+svg.preview-skeleton {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.preview-frame img {
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+
+.preview-frame[data-state="loaded"] img {
+  opacity: 1;
+}
+
+/* Unknown dimensions: the skeleton fills the whole preview area. */
+.preview-skeleton.is-fill {
+  width: 100%;
+  height: 100%;
+}
+
+.preview-skeleton,
+.skeleton {
+  display: block;
+  box-sizing: border-box;
+  border: 1px solid var(--cli-line);
+  background: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in srgb, var(--color-panel-active) 90%, transparent) 50%,
+      transparent 70%
+    )
+    color-mix(in srgb, var(--color-panel) 80%, transparent);
+  background-size: 200% 100%;
+  animation: preview-shimmer 1.4s linear infinite;
+}
+
+/* Loading placeholders (the routes' loading.tsx files) share the image preview's shimmer. */
+
+/* A bar the height of the text it stands in for, centered in its line box so rows keep their height. */
+.skeleton-line {
+  height: 0.75em;
+  margin-block: calc((1lh - 0.75em) / 2);
+  border: 0;
+}
+
+.skeleton-line.is-centered {
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.skeleton-dropzone {
+  width: 100%;
+  min-height: 14rem;
+  border-style: dashed;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes preview-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.file-preview video {
+  display: block;
+  max-width: 100%;
+  max-height: 75vh;
+  margin: 0 auto;
+}
+
+.file-preview audio {
+  width: 100%;
+}
+
+.file-preview iframe {
+  width: 100%;
+  height: 75vh;
+  border: 1px solid var(--cli-line);
+  background: #fff;
+}
+
+.file-text {
+  max-height: 75vh;
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  border: 1px solid var(--cli-line);
+  background: var(--color-bg-raised);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.file-actions form {
+  margin: 0;
+}
+
+/* Date and comment for the gallery, under the image on /view/[id]: terminal-style key/value
+   rows. Labels share one column, so both values start on the same line. */
+.gallery-details {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.55rem 1.5rem;
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto 1.25rem;
+}
+
+.gallery-details label {
+  color: var(--cli-dim);
+}
+
+/* Always one line tall, so "salvo." appearing doesn't push the buttons down. */
+.gallery-details-status {
+  grid-column: 2;
+  min-height: 1lh;
+  margin: 0;
+  color: var(--cli-dim);
+  font-size: 0.85em;
+}
+
+.gallery-details-status.is-error {
+  color: var(--status-danger);
+}
+
+/* An underline instead of a box. amber-muted keeps the edge above 3:1 against the background. */
+.cli-input {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0.2rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--amber-muted);
+  border-radius: 0;
+  background: transparent;
+  color: var(--cli-fg);
+  caret-color: var(--cli-acc);
+  font: inherit;
+  line-height: inherit;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.cli-input.is-date {
+  width: 11ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.cli-input::placeholder {
+  color: var(--cli-dim);
+  opacity: 1;
+}
+
+textarea.cli-input {
+  display: block;
+  max-height: 8lh;
+  field-sizing: content;
+  resize: none;
+}
+
+@supports not (field-sizing: content) {
+  textarea.cli-input {
+    min-height: 3lh;
+    resize: vertical;
+  }
+}
+
+@media (hover: hover) {
+  .cli-input:hover {
+    border-bottom-color: var(--amber-line);
+  }
+}
+
+/* The underline turns bright and doubles: the focus cue, in place of a box outline. */
+.cli-input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--amber-strong);
+  box-shadow: 0 1px 0 var(--amber-strong);
+}
+
+.cli-input[aria-invalid="true"] {
+  border-bottom-color: var(--status-danger);
+}
+
+/* ---------- /gallery ---------- */
+
+/* Stays inside the page column like the heading above it, so the photos end where its rule ends:
+   two columns at the column's full width, one on phones. */
+.gallery-grid {
+  margin-block: 0 2rem;
+  padding: 0;
+  columns: 3 16rem;
+  column-gap: 1.25rem;
+  list-style: none;
+}
+
+/* The same gap between photos down a column as across, so the grid reads as one even field. */
+.gallery-grid li {
+  margin-bottom: 1.25rem;
+  break-inside: avoid;
+}
+
+.gallery-grid a {
+  display: block;
+}
+
+.gallery-grid a img,
+.gallery-grid a video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--cli-line);
+}
+
+.gallery-grid a:hover img,
+.gallery-grid a:hover video {
+  border-color: var(--amber-strong);
+}
+
+/* Tight to its own photo (0.5rem) and well clear of the next one (1.25rem), so it reads as
+   that photo's caption. A body line height here would push the date and comment apart. */
+/* One line: the comment pinned left, the date pinned right. A long comment wraps in its own
+   column and the date stays on the first line. */
+.gallery-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.gallery-caption time {
+  flex: none;
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.gallery-caption span {
+  min-width: 0;
+  text-align: start;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* A Spotify song as its own tile: the album cover where a photo would be (a button that
+   swaps in Spotify's player), then title and artist · album · length as its caption. */
+.gallery-track-cover {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.gallery-track-cover img,
+.gallery-track-blank {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--cli-line);
+}
+
+.gallery-track-blank {
+  display: grid;
+  place-items: center;
+  background: var(--color-panel);
+  color: var(--cli-acc);
+  font-size: 2rem;
+}
+
+.gallery-track-cover:hover img,
+.gallery-track-cover:hover .gallery-track-blank {
+  border-color: var(--amber-strong);
+}
+
+.gallery-track-cover:focus-visible {
+  outline: 1px solid var(--amber-strong);
+  outline-offset: 2px;
+}
+
+.gallery-track-player {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+}
+
+/* Same spacing as a photo caption; the date and comment, when set, follow right under it. */
+.gallery-track-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.9em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gallery-track-info a {
+  color: var(--cli-acc);
+  text-decoration: none;
+}
+
+.gallery-track-info a:hover {
+  text-decoration: underline;
+}
+
+.gallery-track-info + .gallery-caption {
+  margin-top: 0.25rem;
+}
+
+/* The song's own page on /view: Spotify's player at its natural height, not the 75vh box
+   other iframes (PDFs) get. */
+.file-preview .gallery-track-player {
+  height: 352px;
+  border: 0;
+  background: none;
+}
+
+/* The paste-a-song line at the top of /view: label, then the field, status under the field. */
+.add-track {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  /* Under the drop area on /drop, at its full width: the label starts on its left edge and
+     the field ends on its right edge. */
+  margin-block-start: 1.25rem;
+}
+
+.add-track label {
+  color: var(--cli-dim);
+}
+
+/* "pôr na gallery" with its "data de hoje" checkbox beside it, as one item in the action row. */
+.gallery-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.today-option {
+  color: var(--cli-dim);
+}
+
+/* Expanded photo: a modal over the whole screen, the original at its own size or as large as
+   the screen allows, caption underneath. The resized copy sits in the same cell until the
+   original has loaded, then the original fades in over it. */
+.lightbox {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 3rem 1.5rem 1.5rem;
+  border: 0;
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  color: var(--cli-fg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  overscroll-behavior: contain;
+}
+
+.lightbox::backdrop {
+  background: transparent;
+}
+
+html:has(.lightbox[open]) {
+  overflow: hidden;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  background: none;
+  color: var(--cli-dim);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.lightbox-close:hover {
+  color: var(--cli-acc);
+}
+
+.lightbox-stage {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.lightbox-frame {
+  display: grid;
+  min-height: 0;
+  max-width: 100%;
+  animation: lightbox-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lightbox-frame img,
+.lightbox-frame video {
+  grid-area: 1 / 1;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 9rem);
+  object-fit: contain;
+  border: 1px solid var(--cli-line);
+}
+
+.lightbox-image {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.lightbox-image[data-loaded] {
+  opacity: 1;
+}
+
+.lightbox-placeholder[data-hidden] {
+  visibility: hidden;
+}
+
+.lightbox-caption {
+  max-width: 48rem;
+  text-align: center;
+}
+
+.lightbox-caption .gallery-caption {
+  margin: 0;
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@media (max-width: 720px) {
+  .lightbox {
+    padding: 2.75rem 0.75rem 1rem;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-frame {
+    animation: none;
+  }
+
+  .lightbox-image {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropzone,
+  .drop-progress span,
+  .preview-frame img,
+  .cli-input {
+    transition: none;
+  }
+
+  .preview-skeleton,
+  .skeleton {
+    animation: none;
+  }
 }

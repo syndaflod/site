@@ -65,11 +65,10 @@ export function TitleBanner({
   return (
     <header
       className={className ? `title-banner ${className}` : "title-banner"}
-      role="img"
-      aria-label={label}
     >
       <svg
-        aria-hidden="true"
+        role="img"
+        aria-label={label}
         shapeRendering="crispEdges"
         viewBox={`0 0 ${art.columns * CELL_WIDTH} ${art.rows.length * CELL_HEIGHT}`}
       >

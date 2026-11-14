@@ -284,7 +284,7 @@ export function LastFmSection({ language }: { language: Language }) {
   }, []);
 
   return (
-    <div className="cli-block lastfm-section" aria-label="Last.fm">
+    <div className="cli-block lastfm-section">
       <section className="lastfm-block" aria-label={text.recentTracks}>
         <SectionHeading>{text.recentTracks}</SectionHeading>
         {recent.loading ? <p className="cli-dim">{text.loading}</p> : null}

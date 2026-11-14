@@ -45,7 +45,7 @@ QQQQQQQWQQQWQQQQQQWQQQWQQQQQWQQQQQQQQQQQQQQQQWQQQQQWQQQWWWQQQQQQQQQQQQQQQWQ
 
 const copy = {
   "pt-br": {
-    about: "sobre mim",
+    about: "sobre",
     aboutSummary:
       "Estudante de Ciência da Computação e desenvolvedor de software, interessado em criar soluções práticas e automatizar processos.",
     work: "experiência",
@@ -257,7 +257,7 @@ export default function Home() {
           <a href="#top" aria-label={text.backToTop}>
             {text.backToTop}
           </a>
-          <span className="cli-footer-copyright">Official Tureck© Licensed Product 2026</span>
+          <span className="cli-footer-copyright">© 2026 — heitor tureck</span>
         </footer>
       </div>
     </main>
