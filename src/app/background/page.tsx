@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "background · heitor tureck de oliveira",
+  title: "background",
 };
 
 // The ocean canvas lives in the root layout; this page only renders it alone.

@@ -7,7 +7,7 @@ import { GalleryTrack } from "./gallery-track";
 
 export const metadata: Metadata = {
   title: "gallery · heitor tureck de oliveira",
-  description: "fotos, vídeos e músicas de heitor tureck de oliveira.",
+  description: "galeria",
 };
 
 type Dated = { gallery_date: string | null; created_at: string };

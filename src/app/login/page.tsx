@@ -5,7 +5,7 @@ import { GithubButton } from "./github-button";
 import { signOut } from "./actions";
 
 export const metadata: Metadata = {
-  title: "entrar · heitor tureck de oliveira",
+  title: "login",
   robots: { index: false, follow: false },
 };
 

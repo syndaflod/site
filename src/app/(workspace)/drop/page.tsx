@@ -3,7 +3,7 @@ import { requireOwner } from "@/lib/supabase/server";
 import { Dropzone } from "./dropzone";
 
 export const metadata: Metadata = {
-  title: "drop · heitor tureck de oliveira",
+  title: "drop",
   robots: { index: false, follow: false },
 };
 

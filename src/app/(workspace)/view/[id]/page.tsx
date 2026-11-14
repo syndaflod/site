@@ -11,7 +11,7 @@ import { TodayOption } from "../today-option";
 import { ActionButton } from "./action-button";
 
 export const metadata: Metadata = {
-  title: "view · heitor tureck de oliveira",
+  title: "view",
   robots: { index: false, follow: false },
 };
 

@@ -5,7 +5,7 @@ import { signedUrls } from "@/lib/supabase/signed-urls";
 import { FILTERS, fileKind, formatBytes, parseFilter } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "view · heitor tureck de oliveira",
+  title: "view",
   robots: { index: false, follow: false },
 };
 

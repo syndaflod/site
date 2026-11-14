@@ -7,7 +7,7 @@ import { GalleryDetails } from "../../gallery-details";
 import { TodayOption } from "../../today-option";
 
 export const metadata: Metadata = {
-  title: "view · heitor tureck de oliveira",
+  title: "view",
   robots: { index: false, follow: false },
 };
 

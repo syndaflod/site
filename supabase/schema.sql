@@ -5,7 +5,8 @@
 -- Rebuilt on 2026-11-14 from how the app uses the database, after the original file was lost.
 -- Compare it with the live project (Database -> Policies) before running it there.
 --
--- Before running: replace YOUR_GITHUB_USER_ID below with your numeric GitHub user ID.
+-- The owner is the GitHub account whose numeric user ID is in is_owner() below; change it
+-- there to hand the workspace to another account.
 -- After your first sign-in it is in: select provider_id from auth.identities where provider = 'github';
 
 -- ---------------------------------------------------------------------------

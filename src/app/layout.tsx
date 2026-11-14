@@ -3,9 +3,9 @@ import { AsciiOcean } from "../lib/ascii-sharks/react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "heitor tureck de oliveira · portfólio",
+  title: "heitor tureck de oliveira",
   description:
-    "portfólio de heitor tureck de oliveira: desenvolvimento de software, automação e integração de sistemas.",
+    "estudante de ciência da computação e desenvolvedor de software.",
 };
 
 export default function RootLayout({
