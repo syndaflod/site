@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/browser";
-import { DROP_BUCKET, MAX_FILE_BYTES, supabaseEnv } from "@/lib/supabase/env";
+import { MAX_FILE_BYTES } from "@/lib/supabase/env";
 import { formatBytes, todaySaoPaulo } from "@/lib/format";
 import { makeImageVariants, type ImageVariant } from "@/lib/image-variants";
 import { stripMetadata } from "@/lib/strip-metadata";
 import { randomName, storageName } from "@/lib/file-names";
 import { AddTrack } from "./add-track";
+import { discardUploads, signUploads } from "./actions";
 
 type Item = {
   key: string;
@@ -62,18 +63,19 @@ function subscribeOptions(listener: () => void) {
   };
 }
 
-// Stored objects never change (new uuid folder per upload, no upsert), so browsers may keep them a year.
+// Stored objects never change (new uuid folder per upload), so browsers may keep them a year.
 const CACHE_SECONDS = 31536000;
 
-/** PUT to a signed upload URL with XHR, because fetch can't report upload progress. */
-function putWithProgress(url: string, file: File, onProgress: (ratio: number) => void) {
+/**
+ * PUT to a presigned R2 URL with XHR, because fetch can't report upload progress. R2 stores the
+ * content-type and cache-control sent here and serves them back on every GET.
+ */
+function putWithProgress(url: string, file: Blob, onProgress: (ratio: number) => void = () => {}) {
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url);
-    xhr.setRequestHeader("apikey", supabaseEnv().key);
     xhr.setRequestHeader("content-type", file.type || "application/octet-stream");
-    xhr.setRequestHeader("cache-control", `max-age=${CACHE_SECONDS}`);
-    xhr.setRequestHeader("x-upsert", "false");
+    xhr.setRequestHeader("cache-control", `private, max-age=${CACHE_SECONDS}, immutable`);
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress(event.loaded / event.total);
     };
@@ -121,9 +123,10 @@ export function Dropzone() {
       }
 
       const supabase = createClient();
-      const bucket = supabase.storage.from(DROP_BUCKET);
       const folder = crypto.randomUUID();
-      const path = `${folder}/${storageName(file.name)}`;
+      const mainName = storageName(file.name);
+      const path = `${folder}/${mainName}`;
+      // Names inside the folder, for discardUploads if the row can't be saved.
       const uploaded: string[] = [];
       update(key, { status: "uploading" });
 
@@ -133,23 +136,21 @@ export function Dropzone() {
       /** Variants are a speed-up, not the file itself: a failed one is just left out. */
       const uploadVariant = async (name: string, variant: ImageVariant | null) => {
         if (!variant) return null;
-        const variantPath = `${folder}/_v/${name}.${variant.ext}`;
-        const { error } = await bucket.upload(variantPath, variant.blob, {
-          contentType: variant.blob.type,
-          cacheControl: String(CACHE_SECONDS),
-          upsert: false,
-        });
-        if (error) return null;
-        uploaded.push(variantPath);
-        return variantPath;
+        const variantName = `_v/${name}.${variant.ext}`;
+        try {
+          const [signed] = await signUploads(folder, [variantName]);
+          await putWithProgress(signed.url, variant.blob);
+        } catch {
+          return null;
+        }
+        uploaded.push(variantName);
+        return `${folder}/${variantName}`;
       };
 
       try {
-        const { data: signed, error: signError } = await bucket.createSignedUploadUrl(path);
-        if (signError || !signed) throw signError ?? new Error("sem url de upload");
-
-        await putWithProgress(signed.signedUrl, file, (progress) => update(key, { progress }));
-        uploaded.push(path);
+        const [signed] = await signUploads(folder, [mainName]);
+        await putWithProgress(signed.url, file, (progress) => update(key, { progress }));
+        uploaded.push(mainName);
 
         const variants = await variantsPromise;
         const [thumbPath, previewPath] = await Promise.all([
@@ -174,7 +175,7 @@ export function Dropzone() {
           .single();
 
         if (insertError || !row) {
-          await bucket.remove(uploaded);
+          await discardUploads(folder, uploaded).catch(() => {});
           throw insertError ?? new Error("não salvou");
         }
 

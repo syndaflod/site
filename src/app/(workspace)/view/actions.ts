@@ -3,7 +3,8 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireOwner } from "@/lib/supabase/server";
-import { DROP_BUCKET, STORAGE_QUOTA_BYTES } from "@/lib/supabase/env";
+import { STORAGE_QUOTA_BYTES } from "@/lib/supabase/env";
+import { deleteObjects, moveObject } from "@/lib/r2";
 import { fileKind, todaySaoPaulo, type FileKind } from "@/lib/format";
 import { randomName, storageName } from "@/lib/file-names";
 import { getTrack, parseTrackId } from "@/lib/spotify";
@@ -20,7 +21,7 @@ export type StorageUsage = {
 const PAGE = 1000; // PostgREST's default row cap per request
 
 /**
- * Bytes stored in the drop bucket, by file type, for the storage panel on /view. Summed from
+ * Bytes stored in R2, by file type, for the storage panel on /view. Summed from
  * the files table (original uploads); the small thumb/preview copies aren't sized there.
  */
 export async function getStorageUsage(): Promise<StorageUsage> {
@@ -91,14 +92,15 @@ export async function randomizeName(id: string) {
   const folder = file.path.slice(0, file.path.lastIndexOf("/") + 1);
   const path = `${folder}${storageName(name)}`;
 
-  const bucket = supabase.storage.from(DROP_BUCKET);
-  const { error: moveError } = await bucket.move(file.path, path);
-  if (moveError) throw new Error(moveError.message);
+  await moveObject(file.path, path);
 
   const { error } = await supabase.from("files").update({ name, path }).eq("id", id);
   if (error) {
     // Put the object back so the row still points at it.
-    const { error: undoError } = await bucket.move(path, file.path);
+    const undoError = await moveObject(path, file.path).then(
+      () => null,
+      (undo: unknown) => (undo instanceof Error ? undo : new Error(String(undo))),
+    );
     throw new Error(
       undoError ? `${error.message} (e o arquivo ficou em ${path}: ${undoError.message})` : error.message,
     );
@@ -159,10 +161,9 @@ export async function deleteFile(id: string) {
     // Row first: if it fails nothing changed; if storage then fails, only unlisted objects remain.
     const { error } = await supabase.from("files").delete().eq("id", id);
     if (error) throw new Error(error.message);
-    const { error: storageError } = await supabase.storage.from(DROP_BUCKET).remove(
+    await deleteObjects(
       [file.path, file.thumb_path, file.preview_path].filter((path): path is string => Boolean(path)),
     );
-    if (storageError) throw new Error(storageError.message);
   }
   redirect("/view");
 }

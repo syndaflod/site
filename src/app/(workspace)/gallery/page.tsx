@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { signedUrls } from "@/lib/supabase/signed-urls";
+import { signedUrls } from "@/lib/signed-urls";
 import { formatDay } from "@/lib/format";
 import { GalleryPhoto } from "./gallery-photo";
 import { GalleryTrack } from "./gallery-track";
 
 export const metadata: Metadata = {
-  title: "gallery · heitor tureck de oliveira",
-  description: "galeria",
+  title: "gallery",
+  description: "Hahaha",
 };
 
 type Dated = { gallery_date: string | null; created_at: string };
@@ -62,7 +62,7 @@ export default async function GalleryPage() {
   const paths = (photos ?? []).flatMap((photo) =>
     photo.preview_path ? [photo.path, photo.preview_path] : [photo.path],
   );
-  const urls = await signedUrls(supabase, paths);
+  const urls = await signedUrls(paths);
 
   const items = [
     ...(photos ?? []).map((row) => ({ kind: "photo" as const, row })),

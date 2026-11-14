@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient, requireOwner } from "@/lib/supabase/server";
-import { signedUrls } from "@/lib/supabase/signed-urls";
+import { signedUrls } from "@/lib/signed-urls";
 import { FILTERS, fileKind, formatBytes, parseFilter } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -67,7 +67,7 @@ export default async function ViewPage({
   // Tiles use the small copy; older uploads without one fall back to the original.
   const thumbPath = (file: { path: string; thumb_path: string | null }) => file.thumb_path ?? file.path;
   const images = (files ?? []).filter((file) => fileKind(file.mime) === "image");
-  const thumbs = await signedUrls(supabase, images.map(thumbPath));
+  const thumbs = await signedUrls(images.map(thumbPath));
 
   return (
     <main className="cli-root private-root">

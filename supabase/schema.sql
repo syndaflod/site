@@ -74,37 +74,13 @@ create policy "public reads gallery images" on public.files
   using (in_gallery and (mime like 'image/%' or mime like 'video/%'));
 
 -- ---------------------------------------------------------------------------
--- Storage bucket "drop" (private: files are only reachable through signed URLs)
+-- File bytes live in Cloudflare R2, not Supabase Storage (src/lib/r2.ts). R2 has no RLS: the
+-- server only presigns keys taken from rows the files policies above let the caller read.
+-- Left over from the old "drop" bucket, once scripts/migrate-to-r2.mjs has copied everything:
+--   drop policy if exists "owner manages drop objects" on storage.objects;
+--   drop policy if exists "public reads gallery objects" on storage.objects;
+--   then empty and delete the bucket in the dashboard (Storage -> drop).
 -- ---------------------------------------------------------------------------
-
-insert into storage.buckets (id, name, public, file_size_limit)
-values ('drop', 'drop', false, 52428800)  -- 50 MB, matches MAX_FILE_BYTES in src/lib/supabase/env.ts
-on conflict (id) do update
-  set public = excluded.public,
-      file_size_limit = excluded.file_size_limit;
-
--- Upload, sign, rename (move) and delete: owner only.
-drop policy if exists "owner manages drop objects" on storage.objects;
-create policy "owner manages drop objects" on storage.objects
-  for all to authenticated
-  using (bucket_id = 'drop' and (select public.is_owner()))
-  with check (bucket_id = 'drop' and (select public.is_owner()));
-
--- /gallery signs URLs for visitors, so they need to read the original and the preview
--- of published images and videos. The thumbnails and every other file stay owner only.
-drop policy if exists "public reads gallery objects" on storage.objects;
-create policy "public reads gallery objects" on storage.objects
-  for select to anon, authenticated
-  using (
-    bucket_id = 'drop'
-    and exists (
-      select 1
-      from public.files f
-      where f.in_gallery
-        and (f.mime like 'image/%' or f.mime like 'video/%')
-        and storage.objects.name in (f.path, f.preview_path)
-    )
-  );
 
 -- ---------------------------------------------------------------------------
 -- Tracks table: Spotify songs shown in /gallery on their own, next to the photos

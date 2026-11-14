@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient, requireOwner } from "@/lib/supabase/server";
-import { DROP_BUCKET } from "@/lib/supabase/env";
+import { presignGet } from "@/lib/r2";
 import { fileKind, formatBytes, formatDate } from "@/lib/format";
 import { deleteFile, randomizeName, setInGallery } from "../actions";
-import { signedUrls } from "@/lib/supabase/signed-urls";
+import { signedUrls } from "@/lib/signed-urls";
 import { PreviewImage } from "./preview-image";
 import { GalleryDetails } from "../gallery-details";
 import { TodayOption } from "../today-option";
@@ -70,9 +70,9 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
   const galleryable = kind === "image" || kind === "video";
   // Images show the resized copy when there is one; "baixar" always gets the original.
   const viewPath = (kind === "image" && file.preview_path) || file.path;
-  const [views, { data: download }] = await Promise.all([
-    signedUrls(supabase, viewPath === file.path ? [viewPath] : [viewPath, file.path]),
-    supabase.storage.from(DROP_BUCKET).createSignedUrl(file.path, 3600, { download: file.name }),
+  const [views, download] = await Promise.all([
+    signedUrls(viewPath === file.path ? [viewPath] : [viewPath, file.path]),
+    presignGet(file.path, 3600, file.name),
   ]);
   const src = views.get(viewPath);
   // "tamanho real" opens the original, not the resized preview.
@@ -123,7 +123,7 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
           {kind === "image" && fullSrc && (
             <a href={fullSrc} target="_blank" rel="noopener noreferrer">tamanho real</a>
           )}
-          {download?.signedUrl && <a href={download.signedUrl}>baixar</a>}
+          <a href={download}>baixar</a>
           {galleryable && (
             <form action={setInGallery.bind(null, file.id, !file.in_gallery)} className="gallery-toggle">
               <button type="submit" className="cli-button">
