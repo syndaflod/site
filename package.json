@@ -7,12 +7,15 @@
     "node": ">=24"
   },
   "scripts": {
+    "predev": "npm run build:ocean",
     "dev": "next dev --hostname 0.0.0.0 --webpack",
+    "prebuild": "npm run build:ocean",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm run build"
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "build:ocean": "tsc -p tsconfig.ocean.json"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

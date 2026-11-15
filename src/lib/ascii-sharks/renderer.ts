@@ -6,8 +6,8 @@
  *   4. sharks rasterised cell-by-cell with supersampled edges: grey blocks
  *      shaded by the light, dense glyphs, and shimmering accent colours
  */
-import { clamp, hash3, smoothstep } from "./math";
-import { SHARK_NODES, type Shark, type SharkKind, type World } from "./world";
+import { clamp, hash3, smoothstep } from "./math.js";
+import { SHARK_NODES, type Shark, type SharkKind, type World } from "./world.js";
 
 const ALPHA_LEVELS = 6;
 const FISH_ALPHAS = [0.28, 0.42, 0.58, 0.74, 0.9];

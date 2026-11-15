@@ -1,5 +1,5 @@
-import { AsciiRenderer } from "./renderer";
-import { World, type SharkSpec } from "./world";
+import { AsciiRenderer } from "./renderer.js";
+import { World, type SharkSpec } from "./world.js";
 
 const STEP = 1 / 60;
 const MAX_STEPS = 4;
@@ -21,7 +21,8 @@ export class OceanEngine {
   private disposed = false;
 
   constructor(private canvas: HTMLCanvasElement, sharks?: SharkSpec[]) {
-    this.world = new World(sharks);
+    // No fish: the background shows only the sharks.
+    this.world = new World(sharks, 0);
     this.renderer = new AsciiRenderer(canvas);
     this.renderer.setFontFamily(getComputedStyle(canvas).fontFamily);
     this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");

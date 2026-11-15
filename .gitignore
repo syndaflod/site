@@ -17,3 +17,6 @@ npm-debug.log*
 Thumbs.db
 *.swp
 *.swo
+
+# compiled background engine (npm run build:ocean)
+public/ocean/
