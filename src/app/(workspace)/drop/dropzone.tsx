@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/browser";
-import { MAX_FILE_BYTES } from "@/lib/supabase/env";
+import { MAX_FILE_BYTES } from "@/lib/storage-limits";
 import { formatBytes, todaySaoPaulo } from "@/lib/format";
 import { makeImageVariants, type ImageVariant } from "@/lib/image-variants";
 import { stripMetadata } from "@/lib/strip-metadata";
@@ -133,18 +133,37 @@ export function Dropzone() {
       // Resizing runs while the original uploads; a failure here only means no smaller copies.
       const variantsPromise = makeImageVariants(file).catch(() => null);
 
-      /** Variants are a speed-up, not the file itself: a failed one is just left out. */
-      const uploadVariant = async (name: string, variant: ImageVariant | null) => {
-        if (!variant) return null;
-        const variantName = `_v/${name}.${variant.ext}`;
+      /**
+       * Variants are a speed-up, not the file itself: a failed one is just left out. Both are
+       * signed in one server action, so an image costs two round trips to sign, not three.
+       */
+      const uploadVariants = async (list: { name: string; variant: ImageVariant | null }[]) => {
+        const wanted = list.flatMap(({ name, variant }) =>
+          variant ? [{ name: `_v/${name}.${variant.ext}`, blob: variant.blob }] : [],
+        );
+        if (wanted.length === 0) return list.map(() => null);
+        let signed: { key: string; url: string }[];
         try {
-          const [signed] = await signUploads(folder, [variantName]);
-          await putWithProgress(signed.url, variant.blob);
+          signed = await signUploads(folder, wanted.map((entry) => entry.name));
         } catch {
-          return null;
+          return list.map(() => null);
         }
-        uploaded.push(variantName);
-        return `${folder}/${variantName}`;
+        const done = new Set<string>();
+        await Promise.all(
+          wanted.map(async (entry, index) => {
+            try {
+              await putWithProgress(signed[index].url, entry.blob);
+              uploaded.push(entry.name);
+              done.add(entry.name);
+            } catch {
+              // Left out; the original still uploads.
+            }
+          }),
+        );
+        return list.map(({ name, variant }) => {
+          const variantName = variant ? `_v/${name}.${variant.ext}` : null;
+          return variantName && done.has(variantName) ? `${folder}/${variantName}` : null;
+        });
       };
 
       try {
@@ -153,9 +172,9 @@ export function Dropzone() {
         uploaded.push(mainName);
 
         const variants = await variantsPromise;
-        const [thumbPath, previewPath] = await Promise.all([
-          uploadVariant("thumb", variants?.thumb ?? null),
-          uploadVariant("preview", variants?.preview ?? null),
+        const [thumbPath, previewPath] = await uploadVariants([
+          { name: "thumb", variant: variants?.thumb ?? null },
+          { name: "preview", variant: variants?.preview ?? null },
         ]);
 
         const { data: row, error: insertError } = await supabase

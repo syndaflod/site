@@ -76,7 +76,7 @@ create policy "public reads gallery images" on public.files
 -- ---------------------------------------------------------------------------
 -- File bytes live in Cloudflare R2, not Supabase Storage (src/lib/r2.ts). R2 has no RLS: the
 -- server only presigns keys taken from rows the files policies above let the caller read.
--- Left over from the old "drop" bucket, once scripts/migrate-to-r2.mjs has copied everything:
+-- Left over from the old Supabase "drop" bucket, which nothing uses any more:
 --   drop policy if exists "owner manages drop objects" on storage.objects;
 --   drop policy if exists "public reads gallery objects" on storage.objects;
 --   then empty and delete the bucket in the dashboard (Storage -> drop).

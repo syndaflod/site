@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireOwner } from "@/lib/supabase/server";
-import { STORAGE_QUOTA_BYTES } from "@/lib/supabase/env";
+import { STORAGE_QUOTA_BYTES } from "@/lib/storage-limits";
 import { deleteObjects, moveObject } from "@/lib/r2";
 import { fileKind, todaySaoPaulo, type FileKind } from "@/lib/format";
 import { randomName, storageName } from "@/lib/file-names";

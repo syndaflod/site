@@ -1,7 +1,7 @@
 "use client";
 
 /*
- * storage: the drop bucket, type by type, drawn like a CI run. While Supabase answers the
+ * storage: the R2 bucket, type by type, drawn like a CI run. While the usage query answers the
  * status spins; then each file type scans in turn, spinning while it runs and filling its
  * bar at an uneven pace to its share of what's stored, and the total bar fills against the
  * plan's quota as they finish. It plays once per visit to /view and then holds.
@@ -105,7 +105,7 @@ function frame(state: State, t: number, arrived: number) {
 
   let status: string;
   if (state && "error" in state) status = `x failed · ${state.error}`;
-  else if (!usage || p < QUEUED) status = `${spin} waiting for supabase`;
+  else if (!usage || p < QUEUED) status = `${spin} waiting for r2`;
   else if (live >= 0) status = `scanning · ${live + 1} of ${KINDS.length}`;
   else status = `${formatBytes(usage.bytes)} of ${formatBytes(usage.quota)} · ${usage.count} files`;
   text(9, 2, status);

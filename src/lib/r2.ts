@@ -37,14 +37,23 @@ async function presign(key: string, method: "GET" | "PUT", seconds: number, quer
   return signed.url;
 }
 
+/** Content-Disposition that keeps any file name: an ASCII fallback, then the exact UTF-8 name. */
+function attachment(name: string) {
+  const ascii = name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "") // "ção" → "cao", not "c_a_o"
+    .replace(/[^\x20-\x7e]|["\\]/g, "_");
+  // RFC 5987 attr-chars: encodeURIComponent leaves ' ( ) * as is, and those aren't allowed.
+  const exact = encodeURIComponent(name).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${exact}`;
+}
+
 export function presignGet(key: string, seconds: number, downloadName?: string) {
   return presign(
     key,
     "GET",
     seconds,
-    downloadName
-      ? { "response-content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(downloadName)}` }
-      : {},
+    downloadName ? { "response-content-disposition": attachment(downloadName) } : {},
   );
 }
 

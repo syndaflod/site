@@ -25,12 +25,17 @@ export async function signedUrls(paths: string[]) {
     else missing.push(path);
   }
 
-  // Signing is local (HMAC), so there's no network round trip to batch.
+  // Signing is local (HMAC), so there's no network round trip to batch. A key that can't be
+  // signed (say, R2 isn't configured) is left out, so pages skip that file instead of failing.
   await Promise.all(
     missing.map(async (path) => {
-      const url = await presignGet(path, SIGN_SECONDS);
-      urls.set(path, url);
-      cache.set(path, { url, reuseUntil: now + REUSE_MS });
+      try {
+        const url = await presignGet(path, SIGN_SECONDS);
+        urls.set(path, url);
+        cache.set(path, { url, reuseUntil: now + REUSE_MS });
+      } catch (error) {
+        console.error(`signedUrls: ${path}: ${error instanceof Error ? error.message : error}`);
+      }
     }),
   );
 
