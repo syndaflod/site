@@ -1,6 +1,16 @@
 const LASTFM_API = "https://ws.audioscrobbler.com/2.0/";
 const REQUEST_TIMEOUT_MS = 8_000;
-const ALLOWED_METHODS = new Set(["user.getRecentTracks", "user.getTopAlbums"]);
+// The allowed methods, with how many seconds to reuse an upstream response.
+// Recent tracks change often; monthly top albums barely move.
+const REVALIDATE_SECONDS = {
+  "user.getRecentTracks": 20,
+  "user.getTopAlbums": 3600,
+} as const;
+type Method = keyof typeof REVALIDATE_SECONDS;
+
+function isMethod(value: string | null): value is Method {
+  return value !== null && Object.hasOwn(REVALIDATE_SECONDS, value);
+}
 
 function redactKey(value: string, key: string) {
   const encodedKey = encodeURIComponent(key);
@@ -13,7 +23,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const method = searchParams.get("method");
 
-  if (!method || !ALLOWED_METHODS.has(method)) {
+  if (!isMethod(method)) {
     return Response.json({ error: "Unsupported Last.fm method" }, { status: 400 });
   }
 
@@ -29,14 +39,16 @@ export async function GET(request: Request) {
     user,
     api_key: key,
     format: "json",
-    limit: method === "user.getRecentTracks" ? "200" : "9",
+    // The UI shows 5 tracks (plus a possible now-playing entry) and 9 albums.
+    limit: method === "user.getRecentTracks" ? "6" : "9",
   });
 
   if (method === "user.getTopAlbums") params.set("period", "1month");
+  const revalidate = REVALIDATE_SECONDS[method];
 
   try {
     const response = await fetch(`${LASTFM_API}?${params.toString()}`, {
-      cache: "no-store",
+      next: { revalidate },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
@@ -69,7 +81,7 @@ export async function GET(request: Request) {
 
     return Response.json(data, {
       headers: {
-        "Cache-Control": "no-store",
+        "Cache-Control": `public, s-maxage=${revalidate}, stale-while-revalidate=${revalidate}`,
       },
     });
   } catch (error) {

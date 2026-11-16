@@ -32,6 +32,7 @@ type SectionState<T> = { items: T[]; loading: boolean; error: boolean };
 
 const CLIENT_REQUEST_TIMEOUT_MS = 12_000;
 const REFRESH_INTERVAL_MS = 30_000;
+const TOP_REFRESH_INTERVAL_MS = 60 * 60_000;
 
 const messages = {
   "pt-br": {
@@ -238,32 +239,40 @@ export function LastFmSection({ language }: { language: Language }) {
       method: string,
       setter: (state: SectionState<T>) => void,
       getItems: (response: LastFmResponse) => T[],
-    ) {
+    ): Promise<boolean> {
       const timeoutId = window.setTimeout(() => controller.abort(), CLIENT_REQUEST_TIMEOUT_MS);
       try {
         const response = await fetch(`/api/lastfm?method=${encodeURIComponent(method)}`, {
-          cache: "no-store",
           signal: controller.signal,
         });
         if (!response.ok) throw new Error("Last.fm request failed");
         const data = (await response.json()) as LastFmResponse;
         if (data.error) throw new Error("Last.fm returned an error");
         if (active) setter({ items: getItems(data), loading: false, error: false });
+        return true;
       } catch {
         // A timeout must end loading too; only suppress state updates after unmount.
         if (active) setter({ items: [], loading: false, error: true });
+        return false;
       } finally {
         window.clearTimeout(timeoutId);
       }
     }
 
     let refreshing = false;
+    let topLoadedAt = 0;
+    // Monthly top albums barely change: after a load succeeds they're fetched again only hourly,
+    // matching the server cache.
     const refresh = async () => {
       if (refreshing || document.visibilityState === "hidden") return;
       refreshing = true;
       await Promise.all([
         loadSection("user.getRecentTracks", setRecent, (data) => asArray(data.recenttracks?.track)),
-        loadSection("user.getTopAlbums", setTop, (data) => asArray(data.topalbums?.album)),
+        Date.now() - topLoadedAt < TOP_REFRESH_INTERVAL_MS
+          ? null
+          : loadSection("user.getTopAlbums", setTop, (data) => asArray(data.topalbums?.album)).then((ok) => {
+            if (ok) topLoadedAt = Date.now();
+          }),
       ]);
       refreshing = false;
     };
