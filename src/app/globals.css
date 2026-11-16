@@ -290,6 +290,20 @@ html {
   margin-bottom: 2.25rem;
 }
 
+/* The ◆ marker (see mark.tsx): one character wide, like the text around it. */
+.mark {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}
+
+.mark svg {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  vertical-align: 0.05em;
+}
+
 .cli-dim {
   color: var(--cli-dim);
 }

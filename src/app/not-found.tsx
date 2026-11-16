@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TitleBanner } from "./title-banner";
 import { notFoundBanner } from "./title-banners";
+import { Mark } from "./mark";
 
 export default function NotFound() {
   return (
@@ -21,9 +22,7 @@ export default function NotFound() {
           página não encontrada
         </h1>
         <p style={{ marginTop: "1.5rem" }}>
-          <span className="cli-acc" aria-hidden="true">
-            &gt;{" "}
-          </span>
+          <Mark />{" "}
           <Link href="/">voltar ao início</Link>
         </p>
       </div>

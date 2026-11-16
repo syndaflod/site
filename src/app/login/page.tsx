@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, getOwner, safeNext } from "@/lib/supabase/server";
 import { GithubButton } from "./github-button";
 import { signOut } from "./actions";
+import { Mark } from "../mark";
 
 export const metadata: Metadata = {
   title: "login",
@@ -28,7 +29,7 @@ export default async function LoginPage({
     <main className="cli-root private-root">
       <div className="cli-col private-center">
         <h1 className="cli-rule">
-          <span className="cli-acc" aria-hidden="true">&gt;</span>
+          <Mark />
           <span>entrar</span>
         </h1>
         {user ? (

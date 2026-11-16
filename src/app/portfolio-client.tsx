@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { LastFmSection } from "./lastfm-section";
 import { TitleBanner } from "./title-banner";
 import { titleBanner } from "./title-banners";
+import { SectionHeading } from "./mark";
 
 // se foda carai kkkkkkkk
 const trollface = String.raw`
@@ -178,15 +179,6 @@ const sitePages = [
   { label: "echo", hint: "música em outros ambientes" },
   { label: "projects", hint: "projetos e experimentos" },
 ] as const;
-
-function SectionHeading({ children }: { children: string }) {
-  return (
-    <h2 className="cli-rule">
-      <span className="cli-acc" aria-hidden="true">&gt;</span>
-      <span>{children}</span>
-    </h2>
-  );
-}
 
 export default function Home() {
   const language: keyof typeof copy = "pt-br";

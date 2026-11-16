@@ -4,6 +4,7 @@ import { signedUrls } from "@/lib/signed-urls";
 import { formatDay } from "@/lib/format";
 import { GalleryPhoto } from "./gallery-photo";
 import { GalleryTrack } from "./gallery-track";
+import { Mark } from "../../mark";
 
 export const metadata: Metadata = {
   title: "gallery",
@@ -73,7 +74,7 @@ export default async function GalleryPage() {
     <main className="cli-root">
       <div className="cli-col">
         <h1 className="cli-rule">
-          <span className="cli-acc" aria-hidden="true">&gt;</span>
+          <Mark />
           <span>gallery</span>
         </h1>
 

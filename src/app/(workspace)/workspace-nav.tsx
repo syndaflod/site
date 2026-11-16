@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { StoragePanel } from "./storage-panel";
 import { ViewFilter } from "./view-filter";
+import { Mark } from "../mark";
 
 const items = [
   { href: "/drop", label: "drop" },
@@ -30,7 +31,7 @@ export function WorkspaceNav() {
           {items.map((item) => (
             <li key={item.href}>
               <Link href={item.href} aria-current={isActive(pathname, item.href) ? "page" : undefined}>
-                <span className="workspace-nav-caret" aria-hidden="true">&gt;</span>
+                <Mark className="workspace-nav-caret" />
                 {item.label}
               </Link>
             </li>

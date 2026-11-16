@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SectionHeading } from "./mark";
 
 type Language = "pt-br" | "en-us";
 
@@ -127,15 +128,6 @@ function getCoverUrl(images: LastFmAlbum["image"], preferredSize: "medium" | "ex
   } catch {
     return undefined;
   }
-}
-
-function SectionHeading({ children }: { children: string }) {
-  return (
-    <h2 className="cli-rule">
-      <span className="cli-acc" aria-hidden="true">&gt;</span>
-      <span>{children}</span>
-    </h2>
-  );
 }
 
 function RecentTracks({ tracks, language }: { tracks: LastFmTrack[]; language: Language }) {
