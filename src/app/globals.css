@@ -239,11 +239,36 @@ html {
 }
 
 .site-pages li:hover .site-pages-hint,
-.site-pages li:has(:focus-visible) .site-pages-hint,
-.site-pages li:has(.site-pages-soon:focus) .site-pages-hint {
+.site-pages li:has(:focus-visible) .site-pages-hint {
   opacity: 1;
   transform: translate(-50%, 0);
   transition-delay: 250ms;
+}
+
+/* Touch screens have no hover, so tapping a greyed-out item shows its hint until the next tap.
+   Only there: with a mouse, a clicked item would keep its hint open under the next one hovered. */
+@media (hover: none) {
+  .site-pages li:has(.site-pages-soon:focus) .site-pages-hint {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* On narrow screens the links wrap, and a hint centered under a link at the edge would reach
+   past the screen (even hidden, it widens the page). There every hint is centered under the
+   whole row of links instead, so it always fits the column. */
+@media (max-width: 38rem) {
+  .site-pages ul {
+    position: relative;
+  }
+
+  .site-pages li {
+    position: static;
+  }
+
+  .site-pages-hint {
+    max-width: 100%;
+  }
 }
 
 .site-pages-soon:focus-visible {
