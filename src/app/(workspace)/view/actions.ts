@@ -177,6 +177,52 @@ export async function randomizeName(id: string) {
   refresh();
 }
 
+// ---------------------------------------------------------------------------
+// Share links: /s/<token> makes one file public for a while, without /gallery
+// ---------------------------------------------------------------------------
+
+/** How long a share link lasts, by the value of the duration select on /view/[id]. */
+const SHARE_DURATIONS = {
+  "2h": 2 * 60 * 60 * 1000,
+  "1d": 24 * 60 * 60 * 1000,
+  "1w": 7 * 24 * 60 * 60 * 1000,
+  "1m": 30 * 24 * 60 * 60 * 1000,
+  forever: null,
+} as const;
+
+export type ShareDuration = keyof typeof SHARE_DURATIONS;
+export type CreateShareState = { status: "idle" | "created" | "error"; token?: string; message?: string };
+
+export async function createShare(
+  id: string,
+  _previous: CreateShareState,
+  formData: FormData,
+): Promise<CreateShareState> {
+  const { supabase } = await requireOwner(`/view/${id}`);
+  // The duration comes from the browser, so it's looked up, not trusted.
+  const duration = String(formData.get("duration") ?? "");
+  if (!Object.hasOwn(SHARE_DURATIONS, duration)) return { status: "error", message: "duração inválida." };
+  const ms = SHARE_DURATIONS[duration as ShareDuration];
+
+  // 16 random bytes → 22 URL-safe characters, the shape the shares table checks.
+  const token = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64url");
+  const { error } = await supabase.from("shares").insert({
+    file_id: id,
+    token,
+    expires_at: ms === null ? null : new Date(Date.now() + ms).toISOString(),
+  });
+  if (error) return { status: "error", message: error.message };
+  refresh();
+  return { status: "created", token };
+}
+
+export async function revokeShare(fileId: string, shareId: string) {
+  const { supabase } = await requireOwner(`/view/${fileId}`);
+  const { error } = await supabase.from("shares").delete().eq("id", shareId).eq("file_id", fileId);
+  if (error) throw new Error(error.message);
+  refresh();
+}
+
 const MAX_COMMENT = 1000;
 
 /** "13/11/2026" → "2026-11-13", or null when it isn't a real calendar day (31/02, 13/13). */

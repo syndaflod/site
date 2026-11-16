@@ -59,7 +59,7 @@ export default async function GalleryPage() {
   const error = photoError;
   if (trackError) console.error(`gallery: songs not loaded: ${trackError.message}`);
 
-  // Tiles show the resized copy; clicking one expands the original over the page.
+  // Tiles show the resized copy (a video's cover frame); clicking one expands the original.
   const paths = (photos ?? []).flatMap((photo) =>
     photo.preview_path ? [photo.path, photo.preview_path] : [photo.path],
   );
@@ -105,7 +105,11 @@ export default async function GalleryPage() {
               }
               const photo = item.row;
               const url = urls.get(photo.path);
-              const src = (photo.preview_path && urls.get(photo.preview_path)) || url;
+              const video = photo.mime.startsWith("video/");
+              const preview = (photo.preview_path && urls.get(photo.preview_path)) || undefined;
+              // A photo's tile shows its resized copy; a video's plays the original, with the
+              // resized frame as its cover.
+              const src = video ? url : preview || url;
               if (!url || !src) return null;
               return (
                 <li key={photo.id}>
@@ -115,7 +119,8 @@ export default async function GalleryPage() {
                     alt={photo.name}
                     width={photo.width}
                     height={photo.height}
-                    video={photo.mime.startsWith("video/")}
+                    video={video}
+                    poster={video ? preview : undefined}
                   >
                     {caption(photo.gallery_date, photo.gallery_comment)}
                   </GalleryPhoto>

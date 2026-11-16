@@ -10,6 +10,7 @@ type Props = {
   width: number | null;
   height: number | null;
   video?: boolean;
+  poster?: string; // a video's cover frame, when one was made at upload
   children?: React.ReactNode; // caption, shown under the tile and in the expanded view
 };
 
@@ -21,7 +22,7 @@ type Props = {
  * outside the media closes it. The link still points at the original, so a middle-click or
  * ctrl-click opens it in a new tab as before.
  */
-export function GalleryPhoto({ src, full, alt, width, height, video = false, children }: Props) {
+export function GalleryPhoto({ src, full, alt, width, height, video = false, poster, children }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -47,14 +48,16 @@ export function GalleryPhoto({ src, full, alt, width, height, video = false, chi
         {video ? (
           <>
             <video
-              // "#t=0.1" makes browsers draw the first frame instead of a blank box.
-              src={`${src}#t=0.1`}
+              // Without a cover, "#t=0.1" makes browsers draw the first frame instead of a blank
+              // box; with one, nothing loads until the pointer is over it.
+              src={poster ? src : `${src}#t=0.1`}
+              poster={poster}
               width={width ?? undefined}
               height={height ?? undefined}
               muted
               loop
               playsInline
-              preload="metadata"
+              preload={poster ? "none" : "metadata"}
               onPointerEnter={(event) => void event.currentTarget.play().catch(() => {})}
               onPointerLeave={(event) => event.currentTarget.pause()}
             />
@@ -100,6 +103,7 @@ export function GalleryPhoto({ src, full, alt, width, height, video = false, chi
                   className="lightbox-image"
                   data-loaded
                   src={full}
+                  poster={poster}
                   width={width ?? undefined}
                   height={height ?? undefined}
                   controls

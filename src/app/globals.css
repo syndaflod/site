@@ -659,25 +659,17 @@ html {
 
 /* ---------- workspace menu: /drop, /view, /gallery ---------- */
 
-/* Three columns of which the outer two are always equal (minmax(0, 1fr) ignores what's in
-   them), so the menu sits on the page's center line on every page, panel or not. The panel
-   spans every row; the last row is flexible so a tall panel never pushes the filter down. */
+/* One centered column: the menu, then on /view the file-type filters and the storage panel
+   under them, so the menu sits on the page's center line on every page. */
 .workspace-header {
   position: relative;
   z-index: 2;
   display: grid;
-  /* Plain 1fr sides (minimum: their content) instead of minmax(0, 1fr): the right side can't
-     shrink below the storage panel, so the panel never slides over the filters. The menu stays
-     centered whenever both sides fit; when they don't, the empty left side gives way first. */
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
-    ". menu   panel"
-    ". filter panel"
-    ". .      panel";
-  column-gap: 1rem;
-  /* Same width as the page column below (48rem + its side padding), so the panel lines up
-     with the right edge of the file grid instead of the edge of the window. */
+    "menu"
+    "filter"
+    "panel";
   max-width: 51rem;
   margin-inline: auto;
   padding: 2.5rem 1.5rem 0;
@@ -771,12 +763,11 @@ html {
   }
 }
 
-/* Top-right, lined up with the top of the menu. */
+/* Centered under the file-type filters. */
 .storage-panel {
   grid-area: panel;
-  align-self: start;
-  justify-self: end;
-  margin-top: -0.75rem;
+  justify-self: center;
+  margin-top: 1rem;
   animation: view-filter-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -811,22 +802,6 @@ html {
 
 .storage-cell.is-empty {
   background: color-mix(in srgb, var(--cli-line) 45%, transparent);
-}
-
-@media (max-width: 860px) {
-  .workspace-header {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    grid-template-areas:
-      "menu"
-      "filter"
-      "panel";
-  }
-
-  .storage-panel {
-    justify-self: center;
-    margin-top: 1.25rem;
-  }
 }
 
 /* Workspace pages scroll without a visible scrollbar. All of them, not just /view: a bar
@@ -1311,10 +1286,19 @@ svg.preview-skeleton {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.75rem 2rem;
 }
 
 .file-actions form {
+  margin: 0;
+}
+
+/* Buttons that belong together sit closer (0.75rem) than the groups do (the row's 2rem). */
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
   margin: 0;
 }
 
@@ -1603,16 +1587,147 @@ textarea.cli-input {
   color: var(--cli-dim);
 }
 
-/* "pôr na gallery" with its "data de hoje" checkbox beside it, as one item in the action row. */
-.gallery-toggle {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1rem;
-}
-
 .today-option {
   color: var(--cli-dim);
+}
+
+/* The share row under the actions on /view/[id], centered like them; its links list below,
+   at the same width as the gallery details. */
+.share-links {
+  width: 100%;
+  max-width: 32rem;
+  margin: 1.5rem auto 0;
+}
+
+/* Stretch, so the select and "criar link" come out the same height whatever the browser's
+   own select padding is. */
+.share-links > .action-group {
+  justify-content: center;
+  align-items: stretch;
+}
+
+.share-links > .action-group label {
+  align-self: center;
+}
+
+.share-links label {
+  color: var(--cli-dim);
+}
+
+/* A link that does what a button does ("baixar", "tamanho real") looks like one. */
+a.cli-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Same box as .cli-button beside it. Browsers count a click on a select as keyboard-style
+   focus, so focus brightens the border (as inputs do) instead of drawing a ring. */
+.cli-select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--cli-line);
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  color: var(--cli-acc);
+  font: inherit;
+  cursor: pointer;
+}
+
+.cli-select:hover {
+  border-color: var(--amber-line);
+}
+
+.cli-select:focus-visible {
+  outline: none;
+  border-color: var(--amber-strong);
+}
+
+.share-status {
+  margin: 0.5rem 0 0;
+  color: var(--cli-dim);
+  text-align: center;
+}
+
+/* Takes no room until there's a message (it stays in the page so screen readers hear it). */
+.share-status:empty {
+  margin: 0;
+}
+
+.share-status.is-error {
+  color: var(--status-danger);
+}
+
+/* One row per link in shared columns: link, expiry, actions, so every row lines up. */
+.share-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 1.5rem;
+  row-gap: 0.25rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.share-item {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.share-url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-actions {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* Borderless buttons that read like the site's links: accent color, underline on hover. */
+.text-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cli-alt);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.text-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.text-button:focus-visible {
+  outline: 2px solid var(--amber-strong);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .text-button:not(:disabled):hover {
+    color: #fff0c0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .text-button.is-danger:not(:disabled):hover {
+    color: var(--status-danger);
+  }
+}
+
+/* Narrow screens: the link takes its own line, expiry and actions share the next one. */
+@media (max-width: 38rem) {
+  .share-list {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.75rem;
+  }
+
+  .share-url {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Expanded photo: a modal over the whole screen, the original at its own size or as large as

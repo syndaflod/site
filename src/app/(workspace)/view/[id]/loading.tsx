@@ -12,8 +12,8 @@ export default function ViewFileLoading() {
           </div>
         </div>
         <div className="file-actions" aria-hidden="true">
-          {["6.5rem", "3.5rem", "9rem", "4.5rem"].map((width) => (
-            <span key={width} className="skeleton skeleton-line" style={{ width }} />
+          {["6.5rem", "9rem", "9rem"].map((width, index) => (
+            <span key={index} className="skeleton skeleton-line" style={{ width }} />
           ))}
         </div>
       </div>

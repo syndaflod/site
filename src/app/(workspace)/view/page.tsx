@@ -64,10 +64,12 @@ export default async function ViewPage({
   ].sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
   const total = (allFiles?.length ?? 0) + (allTracks?.length ?? 0);
 
-  // Tiles use the small copy; older uploads without one fall back to the original.
-  const thumbPath = (file: { path: string; thumb_path: string | null }) => file.thumb_path ?? file.path;
-  const images = (files ?? []).filter((file) => fileKind(file.mime) === "image");
-  const thumbs = await signedUrls(images.map(thumbPath));
+  // Tiles use the small copy. An image without one (an older upload) falls back to the
+  // original; a video without a cover frame shows its type instead.
+  const thumbPath = (file: { path: string; thumb_path: string | null; mime: string }) =>
+    file.thumb_path ?? (fileKind(file.mime) === "image" ? file.path : null);
+  const thumbPaths = (files ?? []).flatMap((file) => thumbPath(file) ?? []);
+  const thumbs = await signedUrls(thumbPaths);
 
   return (
     <main className="cli-root private-root">
@@ -122,7 +124,8 @@ export default async function ViewPage({
             }
             const { file } = item;
             const kind = fileKind(file.mime);
-            const thumb = kind === "image" ? thumbs.get(thumbPath(file)) : undefined;
+            const coverPath = thumbPath(file);
+            const thumb = coverPath ? thumbs.get(coverPath) : undefined;
             const { stem, ext } = splitName(file.name);
             return (
               <li key={file.id}>

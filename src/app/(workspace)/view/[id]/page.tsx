@@ -9,6 +9,7 @@ import { PreviewImage } from "./preview-image";
 import { GalleryDetails } from "../gallery-details";
 import { TodayOption } from "../today-option";
 import { ActionButton } from "./action-button";
+import { ShareLinks, type Share } from "./share-links";
 
 export const metadata: Metadata = {
   title: "view",
@@ -51,7 +52,7 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
 
   // The owner check and the lookup run together; RLS returns nothing to non-owners anyway.
   const supabase = await createClient();
-  const [, { data: file, error }] = await Promise.all([
+  const [, { data: file, error }, { data: shares, error: shareError }] = await Promise.all([
     requireOwner(`/view/${id}`),
     supabase
       .from("files")
@@ -60,9 +61,19 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
       )
       .eq("id", id)
       .maybeSingle(),
+    // Active share links only; expired ones stay in the table but no longer open anything.
+    supabase
+      .from("shares")
+      .select("id, token, expires_at")
+      .eq("file_id", id)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+      .order("created_at", { ascending: false }),
   ]);
   // A failed query (say, a column the database doesn't have yet) is an error, not a missing file.
   if (error) throw new Error(`erro ao carregar o arquivo: ${error.message}`);
+  // Links are extra: if their query fails (say, the shares table isn't set up yet), the file
+  // still shows and the failure goes to the server log.
+  if (shareError) console.error(`view: share links not loaded: ${shareError.message}`);
   if (!file) notFound();
 
   const kind = fileKind(file.mime);
@@ -70,8 +81,10 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
   const galleryable = kind === "image" || kind === "video";
   // Images show the resized copy when there is one; "baixar" always gets the original.
   const viewPath = (kind === "image" && file.preview_path) || file.path;
+  // A video plays the original, with its cover frame shown until it starts.
+  const posterPath = kind === "video" ? file.preview_path : null;
   const [views, download] = await Promise.all([
-    signedUrls(viewPath === file.path ? [viewPath] : [viewPath, file.path]),
+    signedUrls([viewPath, file.path, ...(posterPath ? [posterPath] : [])]),
     presignGet(file.path, 3600, file.name),
   ]);
   const src = views.get(viewPath);
@@ -94,7 +107,13 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
           ) : kind === "image" ? (
             <PreviewImage src={src} alt={file.name} width={file.width} height={file.height} />
           ) : kind === "video" ? (
-            <video src={src} controls playsInline preload="metadata" />
+            <video
+              src={src}
+              poster={(posterPath && views.get(posterPath)) || undefined}
+              controls
+              playsInline
+              preload="metadata"
+            />
           ) : kind === "audio" ? (
             <audio src={src} controls preload="metadata" />
           ) : kind === "pdf" ? (
@@ -119,24 +138,32 @@ export default async function ViewFilePage({ params }: { params: Promise<{ id: s
           <GalleryDetails id={file.id} date={file.gallery_date} comment={file.gallery_comment} />
         )}
 
+        {/* One row, three groups by purpose: get the file, the gallery, change or delete it.
+            Groups sit further apart than the buttons inside them. */}
         <div className="file-actions">
-          {kind === "image" && fullSrc && (
-            <a href={fullSrc} target="_blank" rel="noopener noreferrer">tamanho real</a>
-          )}
-          <a href={download}>baixar</a>
+          <div className="action-group">
+            <a className="cli-button" href={download}>baixar</a>
+            {kind === "image" && fullSrc && (
+              <a className="cli-button" href={fullSrc} target="_blank" rel="noopener noreferrer">tamanho real</a>
+            )}
+          </div>
           {galleryable && (
-            <form action={setInGallery.bind(null, file.id, !file.in_gallery)} className="gallery-toggle">
+            <form action={setInGallery.bind(null, file.id, !file.in_gallery)} className="action-group">
               <button type="submit" className="cli-button">
                 {file.in_gallery ? "tirar da gallery" : "pôr na gallery"}
               </button>
               {!file.in_gallery && <TodayOption />}
             </form>
           )}
-          <ActionButton action={randomizeName.bind(null, file.id)}>nome aleatório</ActionButton>
-          <form action={deleteFile.bind(null, file.id)}>
-            <button type="submit" className="cli-button is-danger">apagar</button>
-          </form>
+          <div className="action-group">
+            <ActionButton action={randomizeName.bind(null, file.id)}>nome aleatório</ActionButton>
+            <form action={deleteFile.bind(null, file.id)}>
+              <button type="submit" className="cli-button is-danger">apagar</button>
+            </form>
+          </div>
         </div>
+
+        <ShareLinks fileId={file.id} shares={(shares ?? []) as Share[]} />
       </div>
     </main>
   );

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { createClient } from "@/lib/supabase/browser";
 import { MAX_FILE_BYTES } from "@/lib/storage-limits";
 import { formatBytes, todaySaoPaulo } from "@/lib/format";
-import { makeImageVariants, type ImageVariant } from "@/lib/image-variants";
+import { makeVariants, type ImageVariant } from "@/lib/image-variants";
 import { stripMetadata } from "@/lib/strip-metadata";
 import { randomName, storageName } from "@/lib/file-names";
 import { AddTrack } from "./add-track";
@@ -130,8 +130,9 @@ export function Dropzone() {
       const uploaded: string[] = [];
       update(key, { status: "uploading" });
 
-      // Resizing runs while the original uploads; a failure here only means no smaller copies.
-      const variantsPromise = makeImageVariants(file).catch(() => null);
+      // Resizing (or grabbing a video's cover frame) runs while the original uploads; a failure
+      // here only means no smaller copies.
+      const variantsPromise = makeVariants(file).catch(() => null);
 
       /**
        * Variants are a speed-up, not the file itself: a failed one is just left out. Both are

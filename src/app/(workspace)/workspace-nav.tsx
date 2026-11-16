@@ -18,8 +18,8 @@ function isActive(pathname: string, href: string) {
 }
 
 // The workspace header: the menu centered at the top (the current page gets the accent color
-// and a caret). On the /view list a row of file-type filters sits under it and the storage
-// panel to its right. Both are separate landmarks, so the menu itself never changes size.
+// and a marker). On the /view list a row of file-type filters sits under it and the storage
+// panel under those. Both are separate landmarks, so the menu itself never changes size.
 export function WorkspaceNav() {
   const pathname = usePathname();
   const onViewList = pathname === "/view";

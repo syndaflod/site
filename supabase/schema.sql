@@ -125,3 +125,50 @@ drop policy if exists "public reads gallery tracks" on public.tracks;
 create policy "public reads gallery tracks" on public.tracks
   for select to anon, authenticated
   using (in_gallery);
+
+-- ---------------------------------------------------------------------------
+-- Shares table: links that make one file public for a while, without putting it in /gallery
+-- ---------------------------------------------------------------------------
+
+-- /s/<token> looks the token up and redirects to a short-lived R2 link to the file. The token
+-- is made by the server (128 random bits); expires_at null means the link never expires.
+-- Deleting the file deletes its links; revoking a link deletes its row.
+create table if not exists public.shares (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  file_id uuid not null references public.files (id) on delete cascade,
+  token text not null unique check (token ~ '^[A-Za-z0-9_-]{22}$'),
+  expires_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists shares_file_id_idx on public.shares (file_id);
+
+alter table public.shares enable row level security;
+
+grant select, insert, delete on public.shares to authenticated;
+
+drop policy if exists "owner manages shares" on public.shares;
+create policy "owner manages shares" on public.shares
+  for all to authenticated
+  using ((select public.is_owner()))
+  with check ((select public.is_owner()) and owner_id = (select auth.uid()));
+
+-- Visitors get no policy on shares or on unpublished files, so they can't list tokens or files.
+-- This function answers for exactly one token: the file behind it, if the link is still valid.
+create or replace function public.shared_file(share_token text)
+returns table (path text, name text, mime text, expires_at timestamptz)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select f.path, f.name, f.mime, s.expires_at
+  from public.shares s
+  join public.files f on f.id = s.file_id
+  where s.token = share_token
+    and (s.expires_at is null or s.expires_at > now());
+$$;
+
+revoke all on function public.shared_file(text) from public;
+grant execute on function public.shared_file(text) to anon, authenticated;

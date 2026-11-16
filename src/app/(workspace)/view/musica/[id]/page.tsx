@@ -59,7 +59,7 @@ export default async function ViewTrackPage({ params }: { params: Promise<{ id: 
 
         <div className="file-actions">
           <a href={spotifyUrl} target="_blank" rel="noopener noreferrer">abrir no spotify</a>
-          <form action={setTrackInGallery.bind(null, track.id, !track.in_gallery)} className="gallery-toggle">
+          <form action={setTrackInGallery.bind(null, track.id, !track.in_gallery)} className="action-group">
             <button type="submit" className="cli-button">
               {track.in_gallery ? "tirar da gallery" : "pôr na gallery"}
             </button>
