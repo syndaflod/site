@@ -4,7 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireOwner } from "@/lib/supabase/server";
 import { STORAGE_QUOTA_BYTES } from "@/lib/storage-limits";
-import { deleteObjects, moveObject } from "@/lib/r2";
+import { copyObject, deleteObjects, moveObject } from "@/lib/r2";
 import { fileKind, todaySaoPaulo, type FileKind } from "@/lib/format";
 import { randomName, storageName } from "@/lib/file-names";
 import { getTrack, parseTrackId } from "@/lib/spotify";
@@ -76,7 +76,76 @@ async function setGallery(table: GalleryTable, id: string, inGallery: boolean, f
 }
 
 export async function setInGallery(id: string, inGallery: boolean, formData?: FormData) {
-  await setGallery("files", id, inGallery, formData);
+  if (inGallery) {
+    await setGallery("files", id, true, formData);
+    return;
+  }
+
+  // Taking a file out of /gallery: presigned links handed to visitors stay valid for hours, so
+  // after hiding the row, move its objects to a fresh folder. Every old link then hits a key
+  // that no longer exists. Only rows that were in the gallery are updated (and returned), so a
+  // double submit moves the objects once.
+  const { supabase } = await requireOwner(`/view/${id}`);
+  const { data: hidden, error } = await supabase
+    .from("files")
+    .update({ in_gallery: false })
+    .eq("id", id)
+    .eq("in_gallery", true)
+    .select("path, thumb_path, preview_path");
+  if (error) throw new Error(error.message);
+  refresh();
+  if (hidden?.[0]) await moveToNewFolder(supabase, id, hidden[0]);
+}
+
+type StoredPaths = { path: string; thumb_path: string | null; preview_path: string | null };
+
+/**
+ * Moves a file's original and its _v/ copies from "<uuid>/…" to "<new uuid>/…": copy them,
+ * point the row at the copies, then delete the old objects. The row never refers to a key
+ * that's gone, so a failure at any step leaves the file working.
+ */
+async function moveToNewFolder(
+  supabase: Awaited<ReturnType<typeof requireOwner>>["supabase"],
+  id: string,
+  file: StoredPaths,
+) {
+  const folder = crypto.randomUUID();
+  const rehome = (key: string) => `${folder}/${key.slice(key.indexOf("/") + 1)}`;
+  const keys = [file.path, file.thumb_path, file.preview_path].filter((key): key is string => Boolean(key));
+  const copies = keys.map(rehome);
+
+  const fail = async (reason: string): Promise<never> => {
+    // The row still points at the old keys, so the copies are the only thing to clean up.
+    const cleaned = await deleteObjects(copies).then(() => true, () => false);
+    throw new Error(
+      `saiu da gallery, mas os links antigos não foram invalidados: ${reason}`
+        + (cleaned ? "" : ` (sobraram cópias em ${folder}/)`),
+    );
+  };
+  const message = (reason: unknown) => (reason instanceof Error ? reason.message : String(reason));
+
+  try {
+    await Promise.all(keys.map((key, index) => copyObject(key, copies[index])));
+  } catch (reason) {
+    await fail(message(reason));
+  }
+
+  const { error } = await supabase
+    .from("files")
+    .update({
+      path: rehome(file.path),
+      thumb_path: file.thumb_path && rehome(file.thumb_path),
+      preview_path: file.preview_path && rehome(file.preview_path),
+    })
+    .eq("id", id);
+  if (error) await fail(error.message);
+  refresh();
+
+  try {
+    await deleteObjects(keys);
+  } catch (reason) {
+    throw new Error(`saiu da gallery, mas os links antigos ainda funcionam: ${message(reason)}`);
+  }
 }
 
 /**

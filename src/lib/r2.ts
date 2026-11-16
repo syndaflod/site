@@ -75,11 +75,16 @@ export async function deleteObjects(keys: string[]) {
   await Promise.all(keys.map((key) => send(key, { method: "DELETE" })));
 }
 
-/** R2, like S3, has no rename: copy to the new key, then delete the old one. */
-export async function moveObject(from: string, to: string) {
+/** Server-side copy inside the bucket; the object never passes through here. */
+export async function copyObject(from: string, to: string) {
   await send(to, {
     method: "PUT",
     headers: { "x-amz-copy-source": `/${process.env.R2_BUCKET}/${from.split("/").map(encodeURIComponent).join("/")}` },
   });
+}
+
+/** R2, like S3, has no rename: copy to the new key, then delete the old one. */
+export async function moveObject(from: string, to: string) {
+  await copyObject(from, to);
   await send(from, { method: "DELETE" });
 }
