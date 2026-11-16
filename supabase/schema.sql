@@ -156,14 +156,26 @@ create policy "owner manages shares" on public.shares
 
 -- Visitors get no policy on shares or on unpublished files, so they can't list tokens or files.
 -- This function answers for exactly one token: the file behind it, if the link is still valid.
-create or replace function public.shared_file(share_token text)
-returns table (path text, name text, mime text, expires_at timestamptz)
+-- The preview, size and dimensions feed the link's embed card (Discord, WhatsApp, ...).
+-- Dropped first because "create or replace" can't change the columns a function returns.
+drop function if exists public.shared_file(text);
+create function public.shared_file(share_token text)
+returns table (
+  path text,
+  name text,
+  mime text,
+  size bigint,
+  preview_path text,
+  width integer,
+  height integer,
+  expires_at timestamptz
+)
 language sql
 stable
 security definer
 set search_path = ''
 as $$
-  select f.path, f.name, f.mime, s.expires_at
+  select f.path, f.name, f.mime, f.size, f.preview_path, f.width, f.height, s.expires_at
   from public.shares s
   join public.files f on f.id = s.file_id
   where s.token = share_token
