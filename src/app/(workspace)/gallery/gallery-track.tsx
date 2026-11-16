@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PlayBadge } from "./play-badge";
 
 type Props = {
   spotifyId: string;
@@ -44,8 +45,9 @@ export function GalleryTrack({ spotifyId, name, artists, album, year, cover, dur
             // eslint-disable-next-line @next/next/no-img-element -- Spotify's CDN
             <img src={cover} alt="" width={640} height={640} loading="lazy" decoding="async" />
           ) : (
-            <span className="gallery-track-blank" aria-hidden="true">♪</span>
+            <span className="gallery-track-blank" aria-hidden="true" />
           )}
+          <PlayBadge />
           <span className="sr-only">ouvir {label}</span>
         </button>
       )}

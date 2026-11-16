@@ -1494,6 +1494,47 @@ textarea.cli-input {
   outline-offset: 2px;
 }
 
+/* The play mark on video and song covers: a small dimmed disc in the middle, brighter on
+   hover. A video hides it while it plays on hover, so the frame is clear. */
+.gallery-video {
+  position: relative;
+}
+
+.gallery-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  padding-left: 2px; /* the triangle's visual center sits left of its box */
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--cli-acc);
+  opacity: 0.75;
+  transform: translate(-50%, -50%);
+  transition: opacity 150ms ease;
+  pointer-events: none;
+}
+
+.gallery-track-cover:hover .gallery-play,
+.gallery-track-cover:focus-visible .gallery-play {
+  opacity: 1;
+}
+
+.gallery-video:hover .gallery-play {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-play {
+    transition: none;
+  }
+}
+
 .gallery-track-player {
   display: block;
   width: 100%;

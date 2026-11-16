@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { PlayBadge } from "./play-badge";
 
 type Props = {
   src: string; // resized copy shown in the grid (the original itself for videos)
@@ -41,6 +42,7 @@ export function GalleryPhoto({ src, full, alt, width, height, video = false, chi
         rel="noreferrer"
         onClick={show}
         aria-label={video ? `vídeo: ${alt}` : undefined}
+        className={video ? "gallery-video" : undefined}
       >
         {video ? (
           <>
@@ -56,6 +58,7 @@ export function GalleryPhoto({ src, full, alt, width, height, video = false, chi
               onPointerEnter={(event) => void event.currentTarget.play().catch(() => {})}
               onPointerLeave={(event) => event.currentTarget.pause()}
             />
+            <PlayBadge />
           </>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
