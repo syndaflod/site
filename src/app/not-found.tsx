@@ -20,7 +20,6 @@ export default function NotFound() {
         <h1 className="cli-acc cli-b" style={{ margin: 0, fontSize: "inherit" }}>
           página não encontrada
         </h1>
-        <p className="cli-dim">a página que você procurou mudou de lugar ou nunca existiu.</p>
         <p style={{ marginTop: "1.5rem" }}>
           <span className="cli-acc" aria-hidden="true">
             &gt;{" "}

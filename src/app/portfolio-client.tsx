@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 import { LastFmSection } from "./lastfm-section";
 import { TitleBanner } from "./title-banner";
@@ -168,6 +169,16 @@ const copy = {
   },
 } as const;
 
+// Pages linked under the title, each with a short hint shown on hover or focus.
+// The ones without an href are not built yet and show greyed out.
+const sitePages = [
+  { href: "/gallery", label: "gallery", hint: "fotos e músicas" },
+  { href: "/background", label: "background", hint: "plano de fundo" },
+  { label: "play", hint: "jogos" },
+  { label: "echo", hint: "música em outros ambientes" },
+  { label: "projects", hint: "projetos e experimentos" },
+] as const;
+
 function SectionHeading({ children }: { children: string }) {
   return (
     <h2 className="cli-rule">
@@ -189,6 +200,32 @@ export default function Home() {
     <main className="cli-root" id="top">
       <div className="cli-col">
         <TitleBanner art={titleBanner} label="Heitor Tureck de Oliveira" />
+
+        <nav className="site-pages" aria-label="pages">
+          <ul>
+            {sitePages.map((page) => (
+              <li key={page.label}>
+                {"href" in page ? (
+                  <Link href={page.href} aria-describedby={`site-page-hint-${page.label}`}>
+                    {page.label}
+                  </Link>
+                ) : (
+                  <span
+                    className="site-pages-soon"
+                    aria-disabled="true"
+                    aria-describedby={`site-page-hint-${page.label}`}
+                    tabIndex={0}
+                  >
+                    {page.label}
+                  </span>
+                )}
+                <span className="site-pages-hint" id={`site-page-hint-${page.label}`} role="tooltip">
+                  {page.hint}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         <section className="cli-block" aria-label={text.about}>
           <SectionHeading>{text.about}</SectionHeading>

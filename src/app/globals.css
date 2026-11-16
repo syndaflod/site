@@ -184,6 +184,79 @@ html {
   height: auto;
 }
 
+/* The page links sit closer to the banner than the sections below it do. */
+.title-banner:has(+ .site-pages) {
+  margin-bottom: 1rem;
+}
+
+.site-pages {
+  margin-bottom: 14px;
+}
+
+.site-pages ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-pages-soon {
+  color: var(--cli-dim);
+  opacity: 0.6;
+  cursor: default;
+  user-select: none;
+}
+
+.site-pages li {
+  position: relative;
+}
+
+/* A small hint under each link; it fades in after a short hover so it doesn't flicker
+   when the pointer just passes over the row. */
+.site-pages-hint {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  z-index: 2;
+  width: max-content;
+  max-width: min(16rem, calc(100vw - 2rem));
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--cli-dim);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -2px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.site-pages li:hover .site-pages-hint,
+.site-pages li:has(:focus-visible) .site-pages-hint,
+.site-pages li:has(.site-pages-soon:focus) .site-pages-hint {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition-delay: 250ms;
+}
+
+.site-pages-soon:focus-visible {
+  outline: 2px solid var(--amber-strong);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-pages-hint {
+    transition: none;
+  }
+}
+
 .title-banner-404 {
   max-width: 20rem;
 }
